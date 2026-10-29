@@ -2,7 +2,10 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#050508">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <title>Stickman Clash: 1v1 Arena Fighter</title>
   <link rel="stylesheet" href="style.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -10,8 +13,17 @@
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Rajdhani:wght@600;700&display=swap" rel="stylesheet">
 </head>
 <body>
+  <!-- Portrait Rotation Recommendation Banner for Mobile -->
+  <div id="rotate-prompt" class="hidden">
+    <div class="rotate-content">
+      <span class="rotate-icon">🔄</span>
+      <p>Rotate to <strong>Landscape</strong> for the best fighting experience!</p>
+      <button id="btn-dismiss-rotate">Continue Anyway</button>
+    </div>
+  </div>
+
   <div id="game-wrapper">
-    <!-- Top HUD: Health Bars, Timer, Round Badges -->
+    <!-- Top HUD: Health Bars, Timer, Round Badges, Fullscreen -->
     <header id="game-hud">
       <!-- Player 1 Info -->
       <div class="player-hud p1-hud">
@@ -34,6 +46,7 @@
       <div id="center-hud">
         <div id="match-timer">60</div>
         <div id="round-title">ROUND 1</div>
+        <button id="btn-fullscreen" title="Toggle Fullscreen">⛶</button>
       </div>
 
       <!-- Player 2 Info -->
@@ -63,13 +76,13 @@
         <h1 id="callout-text">FIGHT!</h1>
       </div>
 
-      <!-- Quick Controls Reminder Strip (Bottom of Arena) -->
+      <!-- Quick Controls Reminder Strip (Desktop / Keyboard Only) -->
       <div id="quick-controls-hud">
         <div class="quick-hud-p1">
-          <span>🔵 <strong>P1</strong>: <kbd>A</kbd><kbd>D</kbd> Move | <kbd>W</kbd>/<kbd>Space</kbd> Jump | <kbd>Q</kbd> Dash | <kbd>F</kbd> Punch | <kbd>G</kbd> Kick | <kbd>S</kbd> Block/Drop</span>
+          <span>🔵 <strong>P1</strong>: <kbd>A</kbd><kbd>D</kbd> Move | <kbd>W</kbd>/<kbd>Space</kbd> Jump | <kbd>Q</kbd> Dash | <kbd>F</kbd> Punch | <kbd>G</kbd> Kick | <kbd>S</kbd> Block</span>
         </div>
         <div class="quick-hud-p2">
-          <span>🔴 <strong>P2</strong>: <kbd>◀</kbd><kbd>▶</kbd> Move | <kbd>▲</kbd> Jump | <kbd>I</kbd> Dash | <kbd>L</kbd> Punch | <kbd>K</kbd> Kick | <kbd>▼</kbd> Block/Drop</span>
+          <span>🔴 <strong>P2</strong>: <kbd>◀</kbd><kbd>▶</kbd> Move | <kbd>▲</kbd> Jump | <kbd>I</kbd> Dash | <kbd>L</kbd> Punch | <kbd>K</kbd> Kick | <kbd>▼</kbd> Block</span>
         </div>
       </div>
     </main>
@@ -78,22 +91,26 @@
     <div id="menu-overlay" class="overlay active">
       <div class="menu-card">
         <h1 class="game-logo">⚡ STICKMAN <span>CLASH</span> ⚡</h1>
-        <p class="tagline">Ultra-Fluid 1v1 Competitive Stick Fighter</p>
+        <p class="tagline">Mobile-Optimized 1v1 Stick Fighter</p>
 
         <div class="menu-modes">
-          <button class="btn btn-primary" id="btn-mode-2p">👥 2 Players (Local Keyboard / Gamepad)</button>
-          <button class="btn btn-secondary" id="btn-mode-ai">🤖 1 Player vs Smart AI Bot</button>
+          <button class="btn btn-primary" id="btn-mode-ai">🤖 1 Player vs AI Bot</button>
+          <button class="btn btn-secondary" id="btn-mode-2p">👥 2 Players (Local / Gamepad)</button>
+          <button class="btn btn-secondary" id="btn-mode-2p-mobile">📱 2 Players Split-Screen (Tablet/Phone)</button>
           <button class="btn btn-outline" id="btn-controls">🎮 Controls & Move List</button>
         </div>
 
         <div class="settings-strip">
           <label>
-            <input type="checkbox" id="toggle-sfx" checked> Sound FX
+            <input type="checkbox" id="toggle-sfx" checked> 🔊 Sound
           </label>
           <label>
-            <input type="checkbox" id="toggle-touch"> Touch Controls
+            <input type="checkbox" id="toggle-vibration" checked> 📳 Haptics
           </label>
-          <span class="gamepad-badge">🎮 Plug-and-Play Gamepads Supported</span>
+          <label>
+            <input type="checkbox" id="toggle-touch"> 📱 Touch Controls
+          </label>
+          <span class="gamepad-badge">🎮 Gamepads Supported</span>
         </div>
       </div>
     </div>
@@ -101,18 +118,18 @@
     <!-- Controls Guide Modal -->
     <div id="controls-overlay" class="overlay hidden">
       <div class="menu-card controls-card">
-        <h2>🎮 PRO CONTROLS & MOVE LIST</h2>
+        <h2>🎮 CONTROLS & MOVE LIST</h2>
         <div class="controls-grid">
           <div class="control-col p1-box">
-            <h3>🔵 PLAYER 1 (Keyboard / Gamepad 1)</h3>
+            <h3>🔵 PLAYER 1 (Keyboard / Touch / Gamepad 1)</h3>
             <ul>
-              <li><kbd>A</kbd> / <kbd>D</kbd> Run Left / Right</li>
-              <li><kbd>W</kbd> or <kbd>Space</kbd> Jump (Double Jump!)</li>
-              <li><kbd>S</kbd> Block (or Hold to Drop through upper platforms)</li>
-              <li><kbd>Q</kbd> or <kbd>E</kbd> <strong>Dash / Dodge Roll</strong> (Invincible frames!)</li>
-              <li><kbd>F</kbd> <strong>3-Hit Punch Combo</strong> (Tap rapidly)</li>
-              <li><kbd>G</kbd> Roundhouse Kick (In air = <strong>Dive Kick</strong>)</li>
-              <li><kbd>V</kbd> or <kbd>R</kbd> 🔥 <strong>Super Blast</strong> (Requires 100% Bar)</li>
+              <li><kbd>A</kbd> / <kbd>D</kbd> or 🕹️ Move Left / Right</li>
+              <li><kbd>W</kbd> / <kbd>Space</kbd> or <strong>▲ JUMP</strong> (Double Jump)</li>
+              <li><kbd>S</kbd> or <strong>🛡️ BLOCK</strong> (Hold on top stage to Drop)</li>
+              <li><kbd>Q</kbd> / <kbd>E</kbd> or <strong>💨 DASH</strong> (Invincible Roll!)</li>
+              <li><kbd>F</kbd> or <strong>👊 PUNCH</strong> (3-Hit Combo)</li>
+              <li><kbd>G</kbd> or <strong>🦵 KICK</strong> (In air = Dive Kick)</li>
+              <li><kbd>V</kbd> or <strong>⚡ SUPER</strong> (Full Meter Fireball)</li>
             </ul>
           </div>
           <div class="control-col p2-box">
@@ -120,19 +137,16 @@
             <ul>
               <li><kbd>◀</kbd> / <kbd>▶</kbd> Run Left / Right (or Numpad 4/6)</li>
               <li><kbd>▲</kbd> Jump (Double Jump! or Numpad 8/0)</li>
-              <li><kbd>▼</kbd> Block (or Hold to Drop through upper platforms)</li>
-              <li><kbd>I</kbd> or <kbd>Numpad 7</kbd> <strong>Dash / Dodge Roll</strong></li>
-              <li><kbd>L</kbd> <strong>3-Hit Punch Combo</strong> (Tap rapidly)</li>
-              <li><kbd>K</kbd> Roundhouse Kick (In air = <strong>Dive Kick</strong>)</li>
-              <li><kbd>M</kbd> or <kbd>Enter</kbd> 🔥 <strong>Super Blast</strong></li>
+              <li><kbd>▼</kbd> Block (or Hold to Drop)</li>
+              <li><kbd>I</kbd> or <kbd>Numpad 7</kbd> Dash / Dodge Roll</li>
+              <li><kbd>L</kbd> 3-Hit Punch Combo</li>
+              <li><kbd>K</kbd> Roundhouse Kick / Dive Kick</li>
+              <li><kbd>M</kbd> or <kbd>Enter</kbd> Super Blast</li>
             </ul>
           </div>
         </div>
         <p class="guide-tip">
-          💡 <strong>Pro Tips:</strong> 
-          Use <strong>Dash (<kbd>Q</kbd> / <kbd>I</kbd>)</strong> to phase through attacks! 
-          Press attack in the air for aerial spikes. 
-          Hold Down on upper platforms to drop through them!
+          💡 <strong>Mobile Tip:</strong> On touchscreen devices, on-screen arcade buttons appear automatically! Hold directions to run, tap dash to dodge through attacks!
         </p>
         <button class="btn btn-primary" id="btn-close-controls">BACK TO MENU</button>
       </div>
@@ -150,19 +164,77 @@
       </div>
     </div>
 
-    <!-- On-screen Touch Controls (For tablets / mobile) -->
+    <!-- On-screen Touch Controls (1-Player Mobile Setup) -->
     <div id="touch-controls" class="hidden">
-      <div class="touch-group touch-left">
-        <button class="touch-btn" id="tb-left">◀</button>
-        <button class="touch-btn" id="tb-right">▶</button>
-        <button class="touch-btn" id="tb-jump">▲ JUMP</button>
-        <button class="touch-btn" id="tb-block">🛡️ BLOCK</button>
+      <!-- Left Thumbstick / D-Pad Cluster -->
+      <div class="touch-cluster touch-left-cluster">
+        <div class="dpad-grid">
+          <button class="touch-btn dpad-btn" id="tb-jump" data-btn="jump" aria-label="Jump">▲</button>
+          <div class="dpad-horiz">
+            <button class="touch-btn dpad-btn" id="tb-left" data-btn="left" aria-label="Left">◀</button>
+            <button class="touch-btn dpad-btn" id="tb-drop" data-btn="drop" aria-label="Down/Drop">▼</button>
+            <button class="touch-btn dpad-btn" id="tb-right" data-btn="right" aria-label="Right">▶</button>
+          </div>
+        </div>
       </div>
-      <div class="touch-group touch-right">
-        <button class="touch-btn touch-dash" id="tb-dash">💨 DASH</button>
-        <button class="touch-btn touch-action" id="tb-punch">👊 PUNCH</button>
-        <button class="touch-btn touch-action" id="tb-kick">🦵 KICK</button>
-        <button class="touch-btn touch-super" id="tb-super">⚡ SUPER</button>
+
+      <!-- Right Thumb Combat Diamond Cluster -->
+      <div class="touch-cluster touch-right-cluster">
+        <div class="combat-grid">
+          <button class="touch-btn action-btn touch-super" id="tb-super" data-btn="super">
+            <span class="icon">⚡</span>
+            <span class="label">SUPER</span>
+          </button>
+          <button class="touch-btn action-btn touch-block" id="tb-block" data-btn="block">
+            <span class="icon">🛡️</span>
+            <span class="label">BLOCK</span>
+          </button>
+          <button class="touch-btn action-btn touch-dash" id="tb-dash" data-btn="dash">
+            <span class="icon">💨</span>
+            <span class="label">DASH</span>
+          </button>
+          <button class="touch-btn action-btn touch-kick" id="tb-kick" data-btn="kick">
+            <span class="icon">🦵</span>
+            <span class="label">KICK</span>
+          </button>
+          <button class="touch-btn action-btn touch-punch primary-punch" id="tb-punch" data-btn="punch">
+            <span class="icon">👊</span>
+            <span class="label">PUNCH</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2-Player Split-Screen Touch Controls (Tablet Mode) -->
+    <div id="touch-controls-2p" class="hidden">
+      <!-- Player 1 Side (Left Screen) -->
+      <div class="split-side p1-split">
+        <div class="split-row">
+          <button class="touch-btn split-btn" id="t2-p1-left" data-btn="p1-left">◀</button>
+          <button class="touch-btn split-btn" id="t2-p1-jump" data-btn="p1-jump">▲</button>
+          <button class="touch-btn split-btn" id="t2-p1-right" data-btn="p1-right">▶</button>
+        </div>
+        <div class="split-row">
+          <button class="touch-btn split-btn split-action" id="t2-p1-punch" data-btn="p1-punch">👊</button>
+          <button class="touch-btn split-btn split-action" id="t2-p1-kick" data-btn="p1-kick">🦵</button>
+          <button class="touch-btn split-btn split-action" id="t2-p1-block" data-btn="p1-block">🛡️</button>
+          <button class="touch-btn split-btn split-action" id="t2-p1-dash" data-btn="p1-dash">💨</button>
+        </div>
+      </div>
+
+      <!-- Player 2 Side (Right Screen) -->
+      <div class="split-side p2-split">
+        <div class="split-row">
+          <button class="touch-btn split-btn split-p2" id="t2-p2-left" data-btn="p2-left">◀</button>
+          <button class="touch-btn split-btn split-p2" id="t2-p2-jump" data-btn="p2-jump">▲</button>
+          <button class="touch-btn split-btn split-p2" id="t2-p2-right" data-btn="p2-right">▶</button>
+        </div>
+        <div class="split-row">
+          <button class="touch-btn split-btn split-action split-p2" id="t2-p2-punch" data-btn="p2-punch">👊</button>
+          <button class="touch-btn split-btn split-action split-p2" id="t2-p2-kick" data-btn="p2-kick">🦵</button>
+          <button class="touch-btn split-btn split-action split-p2" id="t2-p2-block" data-btn="p2-block">🛡️</button>
+          <button class="touch-btn split-btn split-action split-p2" id="t2-p2-dash" data-btn="p2-dash">💨</button>
+        </div>
       </div>
     </div>
   </div>
