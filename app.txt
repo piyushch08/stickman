@@ -1,29 +1,38 @@
 ================================================================================
-STICKMAN CLASH: 1v1 ARENA FIGHTER
-A Fast-Paced Competitive Multiplayer Stickman Game
+STICKMAN CLASH: 1v1 ARENA FIGHTER (PRO CONTROLS EDITION)
 ================================================================================
 
 HOW TO RUN:
-Open 'index.html' in your browser (Double click or use VS Code Live Server).
+Open 'index.html' in your browser (Double-click or use Live Server in VS Code).
 
-FEATURES:
-- 👥 2 Players on 1 Keyboard (Local Co-op / Versus)
-- 🤖 Single Player vs Intelligent AI Bot (with blocking and combos)
-- ⚔️ Full Combat System: Jab Punch, High Kick, Shield Block, and Super Blast
-- 💥 Ring-Out & Platform Physics (Knock opponents off the floating arena into the abyss!)
-- 🎵 100% Zero-Dependency Web Audio Synth (Punch, Kick, Block, Jump, Super Blast, KO Fanfare)
-- 📱 Optional On-Screen Touch Controls for Mobile / Tablets
-- 🏆 Best of 3 Rounds Tournament Rules
+NEW CONTROLS & COMPETITIVE MECHANICS:
+1. ⚡ Input Buffering: Inputs are buffered so combos and jumps execute without lag.
+2. 🦘 Coyote Time & Jump Buffering: Smooth jumps even if pressed slightly before landing or just off an edge.
+3. 💨 Dash / Dodge Roll: Press [Q] (P1) or [I] (P2) for invincibility frames and rapid repositioning!
+4. 🥋 3-Hit Punch Combos: Tap punch repeatedly to chain Jab -> Cross -> Uppercut Finisher!
+5. 🦵 Aerial Dive Kick: Press kick while airborne to dive down and spike your opponent!
+6. ⬇️ Platform Drop-Through: Hold Down [S] or [Down Arrow] on upper platforms to drop down to the lower stage.
+7. 🎮 Plug-and-Play Gamepads: Connect any USB/Bluetooth game controller (Xbox, PS4/PS5, etc.) and play instantly!
 
-CONTROLS:
+CONTROL MAPPING:
 --------------------------------------------------------------------------------
 ACTION          | PLAYER 1 (Blue)          | PLAYER 2 (Red / AI)
 --------------------------------------------------------------------------------
 Move Left/Right | [A] / [D]                | [Left Arrow] / [Right Arrow]
-Jump (Double)   | [W]                      | [Up Arrow]
-Block (Shield)  | [S] (Reduces 75% Dmg)    | [Down Arrow]
-Punch (Quick)   | [F]                      | [L]
-Kick (Heavy)    | [G]                      | [K]
-Super Blast     | [V] (Requires 100% Bar)  | [M] (Requires 100% Bar)
+Jump (Double)   | [W] or [Space]           | [Up Arrow] (or Numpad 8/0)
+Dash / Dodge    | [Q] or [E] (Invincible!) | [I] or [Numpad 7]
+Drop Platform   | Hold [S] on upper stage  | Hold [Down Arrow] on upper stage
+Block (Shield)  | [S] or [C] (Ground only) | [Down Arrow] or [Numpad 1]
+Punch (Combo)   | [F] or [J]               | [L]
+Kick (Dive Kick)| [G] or [K]               | [K] or [Numpad 5]
+Super Blast     | [V] or [R] (Full Meter)  | [M] or [Numpad Enter]
 --------------------------------------------------------------------------------
-
+GAMEPAD MAPPING:
+- Left Stick / D-Pad: Move & Drop
+- (A) / Cross: Jump
+- (X) / Square: Punch Combo
+- (B) / Circle: Kick
+- (Y) / Triangle: Super Blast
+- LB / RB: Dash
+- LT / RT: Block
+================================================================================

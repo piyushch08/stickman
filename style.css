@@ -1,5 +1,5 @@
 /* ==========================================================================
-   STICKMAN CLASH - 1v1 COMPETITIVE GAME STYLES
+   STICKMAN CLASH - 1v1 COMPETITIVE GAME STYLES (PRO EDITION)
    ========================================================================== */
 * {
   margin: 0;
@@ -236,6 +236,33 @@ body {
   100% { transform: scale(1); opacity: 1; }
 }
 
+/* Quick Controls HUD (Bottom Strip) */
+#quick-controls-hud {
+  position: absolute;
+  bottom: 8px;
+  left: 14px;
+  right: 14px;
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.82rem;
+  color: #94a3b8;
+  background: rgba(10, 12, 22, 0.7);
+  padding: 6px 14px;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  pointer-events: none;
+  z-index: 10;
+  backdrop-filter: blur(4px);
+}
+
+.quick-hud-p1 {
+  color: #7dd3fc;
+}
+
+.quick-hud-p2 {
+  color: #fda4af;
+}
+
 /* ==========================================================================
    MODALS & MENUS
    ========================================================================== */
@@ -264,11 +291,11 @@ body {
   background: #0f111d;
   border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 16px;
-  padding: 36px 44px;
+  padding: 34px 40px;
   text-align: center;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.9), 0 0 0 1px rgba(99, 102, 241, 0.2);
-  max-width: 90%;
-  width: 560px;
+  max-width: 92%;
+  width: 580px;
 }
 
 .game-logo {
@@ -288,14 +315,14 @@ body {
 .tagline {
   color: #94a3b8;
   font-size: 1.05rem;
-  margin-bottom: 28px;
+  margin-bottom: 24px;
 }
 
 .menu-modes {
   display: flex;
   flex-direction: column;
   gap: 12px;
-  margin-bottom: 24px;
+  margin-bottom: 22px;
 }
 
 .btn {
@@ -303,7 +330,7 @@ body {
   font-weight: 700;
   font-size: 1.05rem;
   letter-spacing: 1px;
-  padding: 14px 20px;
+  padding: 13px 20px;
   border-radius: 8px;
   border: none;
   cursor: pointer;
@@ -352,8 +379,10 @@ body {
 .settings-strip {
   display: flex;
   justify-content: center;
-  gap: 20px;
-  font-size: 0.95rem;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 18px;
+  font-size: 0.92rem;
   color: #94a3b8;
   border-top: 1px solid rgba(255, 255, 255, 0.08);
   padding-top: 16px;
@@ -366,24 +395,31 @@ body {
   gap: 6px;
 }
 
+.gamepad-badge {
+  color: #a78bfa;
+  font-weight: 600;
+  font-size: 0.85rem;
+}
+
 /* Controls Card */
 .controls-card {
-  width: 680px;
+  width: 720px;
+  max-width: 95%;
 }
 
 .controls-card h2 {
   font-family: 'Orbitron', sans-serif;
-  font-size: 1.8rem;
+  font-size: 1.6rem;
   color: #facc15;
-  margin-bottom: 20px;
+  margin-bottom: 18px;
 }
 
 .controls-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 20px;
+  gap: 18px;
   text-align: left;
-  margin-bottom: 20px;
+  margin-bottom: 18px;
 }
 
 .control-col {
@@ -397,12 +433,14 @@ body {
   color: #38bdf8;
   margin-bottom: 12px;
   font-family: 'Orbitron', monospace;
+  font-size: 0.95rem;
 }
 
 .p2-box h3 {
   color: #f43f5e;
   margin-bottom: 12px;
   font-family: 'Orbitron', monospace;
+  font-size: 0.95rem;
 }
 
 .control-col ul {
@@ -410,7 +448,7 @@ body {
   display: flex;
   flex-direction: column;
   gap: 8px;
-  font-size: 0.95rem;
+  font-size: 0.92rem;
 }
 
 kbd {
@@ -422,14 +460,14 @@ kbd {
   font-weight: bold;
   color: #f8fafc;
   display: inline-block;
-  min-width: 24px;
+  min-width: 22px;
   text-align: center;
 }
 
 .guide-tip {
   color: #94a3b8;
-  font-size: 0.95rem;
-  margin-bottom: 20px;
+  font-size: 0.92rem;
+  margin-bottom: 18px;
 }
 
 /* Victory Overlay */
@@ -459,7 +497,7 @@ kbd {
    ========================================================================== */
 #touch-controls {
   position: absolute;
-  bottom: 10px;
+  bottom: 40px;
   left: 10px;
   right: 10px;
   display: flex;
@@ -483,10 +521,10 @@ kbd {
   border: 1px solid rgba(255, 255, 255, 0.2);
   color: #ffffff;
   border-radius: 10px;
-  padding: 12px 18px;
+  padding: 12px 16px;
   font-family: 'Orbitron', monospace;
   font-weight: bold;
-  font-size: 0.9rem;
+  font-size: 0.85rem;
   touch-action: manipulation;
   backdrop-filter: blur(4px);
 }
@@ -494,6 +532,11 @@ kbd {
 .touch-btn:active {
   background: rgba(56, 189, 248, 0.5);
   border-color: #38bdf8;
+}
+
+.touch-dash {
+  background: rgba(168, 85, 247, 0.35);
+  border-color: rgba(192, 132, 252, 0.5);
 }
 
 .touch-action {
@@ -505,4 +548,3 @@ kbd {
   background: rgba(234, 179, 8, 0.35);
   border-color: rgba(250, 204, 21, 0.6);
 }
-
