@@ -1,20 +1,26 @@
 ================================================================================
-STICKMAN CLASH: 1v1 ARENA FIGHTER (PRO CONTROLS EDITION)
+STICKMAN CLASH: 1v1 ARENA FIGHTER (MOBILE & RESPONSIVE PRO EDITION)
 ================================================================================
 
 HOW TO RUN:
 Open 'index.html' in your browser (Double-click or use Live Server in VS Code).
+Works on all devices: Mobile Phones (iOS / Android), Tablets / iPads, and Desktops.
 
-NEW CONTROLS & COMPETITIVE MECHANICS:
-1. ⚡ Input Buffering: Inputs are buffered so combos and jumps execute without lag.
-2. 🦘 Coyote Time & Jump Buffering: Smooth jumps even if pressed slightly before landing or just off an edge.
-3. 💨 Dash / Dodge Roll: Press [Q] (P1) or [I] (P2) for invincibility frames and rapid repositioning!
-4. 🥋 3-Hit Punch Combos: Tap punch repeatedly to chain Jab -> Cross -> Uppercut Finisher!
-5. 🦵 Aerial Dive Kick: Press kick while airborne to dive down and spike your opponent!
-6. ⬇️ Platform Drop-Through: Hold Down [S] or [Down Arrow] on upper platforms to drop down to the lower stage.
-7. 🎮 Plug-and-Play Gamepads: Connect any USB/Bluetooth game controller (Xbox, PS4/PS5, etc.) and play instantly!
+📱 MOBILE & RESPONSIVE FEATURES:
+1. 🕹️ Dual-Thumb Touch Controls:
+   - Left Thumb: Ergonomic D-Pad (◀ Left, ▶ Right, ▲ Jump, ▼ Drop/Crouch)
+   - Right Thumb: Combat Cluster (👊 Punch, 🦵 Kick, 💨 Dash, 🛡️ Block, ⚡ Super)
+2. ⚡ Multi-Touch Support: Hold run while jumping, sliding, and punching simultaneously!
+3. 📳 Tactile Haptic Feedback: Phone vibrates on punches, kicks, blocks, and KOs!
+4. 📱 2-Player Split-Screen Mode: Two players can fight on the same tablet or large phone!
+   - Player 1 uses buttons on the left side of the screen.
+   - Player 2 uses buttons on the right side of the screen.
+5. ⛶ Fullscreen & Orientation Detection:
+   - One-tap fullscreen button (⛶) hides the browser bar.
+   - Automatic landscape recommendation banner on mobile portrait.
+6. 📐 Responsive Canvas: Scales cleanly to 100vw/100vh with Retina display sharpness.
 
-CONTROL MAPPING:
+KEYBOARD / DESKTOP CONTROLS:
 --------------------------------------------------------------------------------
 ACTION          | PLAYER 1 (Blue)          | PLAYER 2 (Red / AI)
 --------------------------------------------------------------------------------
@@ -27,12 +33,4 @@ Punch (Combo)   | [F] or [J]               | [L]
 Kick (Dive Kick)| [G] or [K]               | [K] or [Numpad 5]
 Super Blast     | [V] or [R] (Full Meter)  | [M] or [Numpad Enter]
 --------------------------------------------------------------------------------
-GAMEPAD MAPPING:
-- Left Stick / D-Pad: Move & Drop
-- (A) / Cross: Jump
-- (X) / Square: Punch Combo
-- (B) / Circle: Kick
-- (Y) / Triangle: Super Blast
-- LB / RB: Dash
-- LT / RT: Block
 ================================================================================

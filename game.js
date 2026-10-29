@@ -1,7 +1,11 @@
 /**
- * STICKMAN CLASH - 1v1 Arena Fighter (Pro Controls Edition)
- * Enhanced with Input Buffering, Coyote Time, Jump Buffering, Air Attacks,
- * 3-Hit Combos, Dash/Roll Dodging, Platform Drop-Through, and Gamepad Support.
+ * STICKMAN CLASH - 1v1 Arena Fighter (Mobile & Responsive Pro Edition)
+ * Features:
+ * - Multi-Touch Engine with pointer tracking & haptics
+ * - 2-Player Split-Screen Touch Mode for tablets/phones
+ * - Responsive Canvas Auto-scaler (Retina & high-DPI crisp)
+ * - Orientation detection & Fullscreen API integration
+ * - Fluid stickman physics, 3-hit combos, dash/dodge, & Web Audio synth
  */
 
 // ============================================================================
@@ -136,7 +140,19 @@ class SoundFX {
 const sfx = new SoundFX();
 
 // ============================================================================
-// PARTICLES & GHOST TRAIL (For Dashing & Hits)
+// HAPTIC FEEDBACK HELPER
+// ============================================================================
+const Haptics = {
+  enabled: true,
+  trigger(ms = 15) {
+    if (this.enabled && navigator.vibrate) {
+      try { navigator.vibrate(ms); } catch (e) {}
+    }
+  }
+};
+
+// ============================================================================
+// PARTICLES & GHOST TRAILS
 // ============================================================================
 class Particle {
   constructor(x, y, color, vx, vy, size = 3, life = 25) {
@@ -265,7 +281,7 @@ class Projectile {
 }
 
 // ============================================================================
-// STICKMAN FIGHTER CLASS (Fluid Movement & Combat)
+// STICKMAN FIGHTER CLASS
 // ============================================================================
 class Stickman {
   constructor(x, y, color, isP1 = true) {
@@ -287,22 +303,20 @@ class Stickman {
     this.superMeter = 0;
     this.roundsWon = 0;
 
-    // Physics & Movement Feel
+    // Physics & Movement
     this.speed = 6.0;
     this.jumpForce = -13.8;
     this.gravity = 0.68;
     this.grounded = false;
     this.jumpCount = 0;
-    this.maxJumps = 2; // Double Jump
+    this.maxJumps = 2;
 
-    // Platform pass-through (drop down)
+    // Drop Through, Coyote & Buffer
     this.dropThroughTimer = 0;
+    this.coyoteTimer = 0;
+    this.jumpBufferTimer = 0;
 
-    // Advanced Responsiveness: Coyote Time & Jump Buffering
-    this.coyoteTimer = 0; // Frames allowed to jump after stepping off a platform
-    this.jumpBufferTimer = 0; // Frames allowed to execute jump upon landing
-
-    // Dash / Dodge Roll
+    // Dash / Dodge
     this.dashTimer = 0;
     this.dashCooldown = 0;
     this.isInvincible = false;
@@ -321,7 +335,6 @@ class Stickman {
     this.hitStun = 0;
     this.isDead = false;
 
-    // Visuals
     this.animTime = 0;
   }
 
@@ -362,7 +375,7 @@ class Stickman {
   }
 
   triggerJump() {
-    this.jumpBufferTimer = 8; // Buffer jump request for 8 frames
+    this.jumpBufferTimer = 8;
   }
 
   executeJump() {
@@ -376,7 +389,6 @@ class Stickman {
       this.jumpBufferTimer = 0;
       sfx.playJump();
     } else if (this.jumpCount < this.maxJumps) {
-      // Double Jump
       this.vy = this.jumpForce * 0.95;
       this.jumpCount++;
       this.jumpBufferTimer = 0;
@@ -385,7 +397,6 @@ class Stickman {
   }
 
   dropDown() {
-    // Drop down through upper floating platforms
     if (this.grounded && this.y < 420) {
       this.dropThroughTimer = 16;
       this.grounded = false;
@@ -396,14 +407,13 @@ class Stickman {
 
   dash(game) {
     if (this.hitStun > 0 || this.dashCooldown > 0 || this.dashTimer > 0 || this.isDead) return;
-    this.dashTimer = 12; // 12 active dash frames
-    this.dashCooldown = 32; // Cooldown frames
+    this.dashTimer = 12;
+    this.dashCooldown = 32;
     this.isInvincible = true;
     this.vx = this.facing * 14;
     this.vy = 0;
     sfx.playDash();
-
-    // Spawn ghost trails
+    Haptics.trigger(20);
     game.ghostTrails.push(new GhostTrail(this.x, this.y, this.facing, this.color));
   }
 
@@ -416,16 +426,14 @@ class Stickman {
   punch(opponent, game) {
     if (this.hitStun > 0 || this.dashTimer > 0 || this.isPunching || this.isKicking || this.isBlocking || this.isDead) return;
 
-    // Advance combo step (1 -> 2 -> 3)
     this.comboStep = (this.comboStep % 3) + 1;
     this.comboResetTimer = 28;
-
     this.isPunching = true;
     this.punchTimer = 12;
 
     sfx.playPunch(this.comboStep);
+    Haptics.trigger(15);
 
-    // Hitbox detection
     const reach = 55 + (this.comboStep === 3 ? 12 : 0);
     const hitX = this.x + this.facing * reach;
     const dist = Math.abs(hitX - opponent.x);
@@ -442,6 +450,7 @@ class Stickman {
 
       if (isFinisher) {
         game.addFloatingText('3-HIT COMBO!', this.x, this.y - 70, '#facc15');
+        Haptics.trigger(30);
       }
     }
   }
@@ -454,15 +463,14 @@ class Stickman {
     this.kickTimer = 18;
 
     if (this.isAirKicking) {
-      // Aerial dive kick!
       this.vy = 8;
       this.vx = this.facing * 7;
       sfx.playKick(true);
     } else {
       sfx.playKick(false);
     }
+    Haptics.trigger(20);
 
-    // Hitbox detection
     const reach = 65;
     const hitX = this.x + this.facing * reach;
     const dist = Math.abs(hitX - opponent.x);
@@ -475,6 +483,7 @@ class Stickman {
 
       opponent.takeDamage(damage, knockX, knockY, game, 'KICK');
       this.addSuper(16);
+      Haptics.trigger(35);
     }
   }
 
@@ -482,6 +491,7 @@ class Stickman {
     if (this.hitStun > 0 || this.dashTimer > 0 || this.isDead || this.superMeter < 100) return;
     this.superMeter = 0;
     sfx.playSuper();
+    Haptics.trigger(50);
     game.addProjectile(new Projectile(this.x + this.facing * 35, this.y - 25, this.facing, this));
     game.addFloatingText('SUPER BLAST!', this.x, this.y - 60, '#facc15');
     game.triggerScreenShake(8);
@@ -499,12 +509,14 @@ class Stickman {
       knockX *= 0.15;
       knockY = 0;
       sfx.playBlock();
+      Haptics.trigger(10);
       game.addFloatingText('BLOCKED!', this.x, this.y - 40, '#38bdf8');
       game.createSparks(this.x, this.y - 30, '#38bdf8', 6);
     } else {
       this.hitStun = 12;
       this.vx = knockX;
       this.vy = knockY;
+      Haptics.trigger(type === 'KICK' || type === 'COMBO' ? 40 : 25);
       game.triggerScreenShake(type === 'COMBO' || type === 'KICK' ? 6 : 3);
       game.addFloatingText(`-${amt}`, this.x, this.y - 45, '#f43f5e');
       game.createSparks(this.x, this.y - 25, '#facc15', type === 'KICK' ? 14 : 8);
@@ -524,11 +536,11 @@ class Stickman {
     this.vy = -8;
     this.vx = -this.facing * 5;
     sfx.playKO();
+    Haptics.trigger(80);
     game.onPlayerKnockedOut(this);
   }
 
   update(platforms, arenaHeight, game) {
-    // Action Timers
     if (this.punchTimer > 0) {
       this.punchTimer--;
       if (this.punchTimer === 0) this.isPunching = false;
@@ -544,7 +556,6 @@ class Stickman {
     if (this.dropThroughTimer > 0) this.dropThroughTimer--;
     if (this.dashCooldown > 0) this.dashCooldown--;
 
-    // Dash state
     if (this.dashTimer > 0) {
       this.dashTimer--;
       if (Math.random() < 0.4) {
@@ -556,31 +567,26 @@ class Stickman {
       }
     }
 
-    // Combo reset decay
     if (this.comboResetTimer > 0) {
       this.comboResetTimer--;
       if (this.comboResetTimer === 0) this.comboStep = 0;
     }
 
-    // Jump Buffering & Coyote Timer
     if (this.jumpBufferTimer > 0) {
       this.executeJump();
       this.jumpBufferTimer--;
     }
 
     if (this.grounded) {
-      this.coyoteTimer = 6; // 6 frames grace period
+      this.coyoteTimer = 6;
     } else if (this.coyoteTimer > 0) {
       this.coyoteTimer--;
     }
 
-    // Physics
     this.x += this.vx;
     this.y += this.vy;
     this.vy += this.gravity;
 
-    // Platform Collisions (Drop-through friendly)
-    const wasGrounded = this.grounded;
     this.grounded = false;
 
     if (this.dropThroughTimer <= 0) {
@@ -600,12 +606,10 @@ class Stickman {
       });
     }
 
-    // Ring-out fall
     if (this.y > arenaHeight + 60 && !this.isDead) {
       this.die(game);
     }
 
-    // Animation ticker
     if (Math.abs(this.vx) > 0.5 && this.grounded) {
       this.animTime += 0.28;
     } else {
@@ -613,12 +617,10 @@ class Stickman {
     }
   }
 
-  // Draw Stickman with Fluid Animations
   draw(ctx) {
     ctx.save();
     ctx.translate(this.x, this.y);
 
-    // Hit stun flash / Invincible Dash Alpha
     if (this.isInvincible) {
       ctx.globalAlpha = 0.5;
     }
@@ -638,7 +640,6 @@ class Stickman {
     const dir = this.facing;
     const bounce = Math.sin(this.animTime) * 2;
 
-    // Blocking Shield Aura
     if (this.isBlocking) {
       ctx.save();
       ctx.beginPath();
@@ -651,19 +652,19 @@ class Stickman {
       ctx.restore();
     }
 
-    // 1. Head
+    // Head
     const headY = -68 + bounce;
     ctx.beginPath();
     ctx.arc(0, headY, 11, 0, Math.PI * 2);
     ctx.fill();
 
-    // Headband / eye visor
+    // Eye visor
     ctx.fillStyle = '#ffffff';
     ctx.beginPath();
     ctx.rect(dir * 2, headY - 3, dir * 7, 3);
     ctx.fill();
 
-    // 2. Spine / Torso
+    // Torso
     const neckY = headY + 11;
     const hipY = -28 + bounce;
     ctx.beginPath();
@@ -671,19 +672,17 @@ class Stickman {
     ctx.lineTo(0, hipY);
     ctx.stroke();
 
-    // 3. Legs
+    // Legs
     const legPhase = this.grounded ? Math.sin(this.animTime * 3) : 0;
     const lFootX = Math.sin(legPhase) * 16;
     const rFootX = -Math.sin(legPhase) * 16;
 
-    // Left Leg
     ctx.beginPath();
     ctx.moveTo(0, hipY);
     ctx.lineTo(-4 + lFootX * 0.4, hipY + 16);
     ctx.lineTo(-6 + lFootX, 0);
     ctx.stroke();
 
-    // Right Leg (or Kick)
     if (this.isKicking) {
       ctx.beginPath();
       ctx.moveTo(0, hipY);
@@ -698,17 +697,15 @@ class Stickman {
       ctx.stroke();
     }
 
-    // 4. Arms
+    // Arms
     const shoulderY = neckY + 6;
 
-    // Back Arm
     ctx.beginPath();
     ctx.moveTo(0, shoulderY);
     ctx.lineTo(-dir * 12, shoulderY + 14);
     ctx.lineTo(-dir * 18, shoulderY + 22);
     ctx.stroke();
 
-    // Front Arm (Punch / Block / Idle)
     if (this.isPunching) {
       const punchReach = 44 + (this.comboStep === 3 ? 12 : 0);
       ctx.beginPath();
@@ -717,7 +714,6 @@ class Stickman {
       ctx.lineTo(dir * punchReach, shoulderY - (this.comboStep === 3 ? 14 : 0));
       ctx.stroke();
 
-      // Fist Glow
       ctx.save();
       ctx.fillStyle = this.comboStep === 3 ? '#ef4444' : '#facc15';
       ctx.shadowColor = ctx.fillStyle;
@@ -752,22 +748,22 @@ class StickmanGame {
   constructor() {
     this.canvas = document.getElementById('gameCanvas');
     this.ctx = this.canvas.getContext('2d');
-    this.width = this.canvas.width;
-    this.height = this.canvas.height;
+    this.width = 1000;
+    this.height = 600;
 
     // Modes & States
-    this.mode = '2P';
+    this.mode = 'AI'; // Default to vs AI on mobile
+    this.touchMode = '1P'; // '1P' or '2P_SPLIT'
     this.state = 'MENU';
     this.round = 1;
     this.maxRounds = 3;
     this.roundTime = 60;
     this.timerInterval = null;
 
-    // Screen Shake & Slow-Mo
     this.screenShake = 0;
     this.slowMo = 1.0;
 
-    // Platforms in Arena
+    // Platforms
     this.platforms = [
       { x: 180, y: 490, w: 640, h: 26, name: 'Main Platform' },
       { x: 120, y: 350, w: 220, h: 18, name: 'Left Platform' },
@@ -784,9 +780,10 @@ class StickmanGame {
     this.floatingTexts = [];
     this.ghostTrails = [];
 
-    // Keyboard states
+    // Keyboard & Touch tracking
     this.keys = {};
     this.justPressed = {};
+    this.activeTouchPointers = new Map(); // pointerId -> action
 
     // DOM Elements
     this.domP1Health = document.getElementById('p1-health');
@@ -802,21 +799,67 @@ class StickmanGame {
     this.domGameOverOverlay = document.getElementById('gameover-overlay');
     this.domP1Rounds = document.getElementById('p1-rounds').children;
     this.domP2Rounds = document.getElementById('p2-rounds').children;
+    this.domSuperBtn = document.getElementById('tb-super');
+    this.domTouch1P = document.getElementById('touch-controls');
+    this.domTouch2P = document.getElementById('touch-controls-2p');
+    this.domRotatePrompt = document.getElementById('rotate-prompt');
 
+    this.initDeviceResponsiveness();
     this.bindEvents();
+    this.bindTouchControls();
+
     window.gameInstance = this;
     this.loop();
+  }
+
+  // Auto-detect touch device and setup responsive viewport
+  initDeviceResponsiveness() {
+    const isTouchDevice = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
+    const touchCheckbox = document.getElementById('toggle-touch');
+
+    if (isTouchDevice) {
+      touchCheckbox.checked = true;
+      this.domTouch1P.classList.remove('hidden');
+    }
+
+    // Check device orientation for rotate prompt
+    const checkOrientation = () => {
+      const isPortrait = window.innerHeight > window.innerWidth;
+      const isMobileWidth = window.innerWidth < 850;
+      if (isTouchDevice && isPortrait && isMobileWidth) {
+        this.domRotatePrompt.classList.remove('hidden');
+      } else {
+        this.domRotatePrompt.classList.add('hidden');
+      }
+    };
+
+    window.addEventListener('resize', checkOrientation);
+    window.addEventListener('orientationchange', checkOrientation);
+    checkOrientation();
+
+    document.getElementById('btn-dismiss-rotate').addEventListener('click', () => {
+      this.domRotatePrompt.classList.add('hidden');
+    });
+
+    // Fullscreen toggle
+    document.getElementById('btn-fullscreen').addEventListener('click', () => {
+      sfx.init();
+      if (!document.fullscreenElement) {
+        const docEl = document.documentElement;
+        if (docEl.requestFullscreen) docEl.requestFullscreen();
+        else if (docEl.webkitRequestFullscreen) docEl.webkitRequestFullscreen();
+      } else {
+        if (document.exitFullscreen) document.exitFullscreen();
+      }
+    });
   }
 
   bindEvents() {
     window.addEventListener('keydown', (e) => {
       sfx.init();
-
-      // Prevent default page scroll on gaming keys
       if (['Space', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.code)) {
         e.preventDefault();
       }
-
       if (!this.keys[e.code]) {
         this.justPressed[e.code] = true;
       }
@@ -825,21 +868,27 @@ class StickmanGame {
 
     window.addEventListener('keyup', (e) => {
       this.keys[e.code] = false;
-
-      // Handle un-blocking smoothly
       if (['KeyS', 'KeyC'].includes(e.code)) this.p1.block(false);
       if (['ArrowDown', 'Numpad1'].includes(e.code)) this.p2.block(false);
     });
 
-    // Menu buttons
+    // Menus
+    document.getElementById('btn-mode-ai').addEventListener('click', () => {
+      sfx.init();
+      this.touchMode = '1P';
+      this.startNewMatch('AI');
+    });
+
     document.getElementById('btn-mode-2p').addEventListener('click', () => {
       sfx.init();
+      this.touchMode = '1P';
       this.startNewMatch('2P');
     });
 
-    document.getElementById('btn-mode-ai').addEventListener('click', () => {
+    document.getElementById('btn-mode-2p-mobile').addEventListener('click', () => {
       sfx.init();
-      this.startNewMatch('AI');
+      this.touchMode = '2P_SPLIT';
+      this.startNewMatch('2P');
     });
 
     document.getElementById('btn-controls').addEventListener('click', () => {
@@ -860,78 +909,156 @@ class StickmanGame {
       this.state = 'MENU';
     });
 
-    // Settings
     document.getElementById('toggle-sfx').addEventListener('change', (e) => {
       sfx.enabled = e.target.checked;
     });
 
-    document.getElementById('toggle-touch').addEventListener('change', (e) => {
-      const tc = document.getElementById('touch-controls');
-      if (e.target.checked) tc.classList.remove('hidden');
-      else tc.classList.add('hidden');
+    document.getElementById('toggle-vibration').addEventListener('change', (e) => {
+      Haptics.enabled = e.target.checked;
     });
 
-    // Touch controls for P1
-    const bindTouch = (id, onDown, onUp) => {
-      const el = document.getElementById(id);
-      if (!el) return;
-      el.addEventListener('touchstart', (e) => { e.preventDefault(); sfx.init(); onDown(); });
-      el.addEventListener('touchend', (e) => { e.preventDefault(); if (onUp) onUp(); });
-    };
-
-    bindTouch('tb-left', () => this.p1.move(-1), () => this.p1.stopMove());
-    bindTouch('tb-right', () => this.p1.move(1), () => this.p1.stopMove());
-    bindTouch('tb-jump', () => this.p1.triggerJump());
-    bindTouch('tb-block', () => this.p1.block(true), () => this.p1.block(false));
-    bindTouch('tb-punch', () => this.p1.punch(this.p2, this));
-    bindTouch('tb-kick', () => this.p1.kick(this.p2, this));
-    bindTouch('tb-super', () => this.p1.fireSuper(this));
-    bindTouch('tb-dash', () => this.p1.dash(this));
+    document.getElementById('toggle-touch').addEventListener('change', (e) => {
+      if (e.target.checked) {
+        if (this.touchMode === '2P_SPLIT') this.domTouch2P.classList.remove('hidden');
+        else this.domTouch1P.classList.remove('hidden');
+      } else {
+        this.domTouch1P.classList.add('hidden');
+        this.domTouch2P.classList.add('hidden');
+      }
+    });
   }
 
-  // Poll standard Gamepad controllers (Xbox / PS / USB)
+  // Pointer / Multi-Touch Architecture with slide tracking
+  bindTouchControls() {
+    const handleTouchAction = (action, isPressed) => {
+      if (this.state !== 'PLAYING') return;
+
+      // 1-Player Actions (Player 1)
+      if (action === 'left') {
+        if (isPressed) this.p1.move(-1);
+        else this.p1.stopMove();
+      } else if (action === 'right') {
+        if (isPressed) this.p1.move(1);
+        else this.p1.stopMove();
+      } else if (action === 'jump') {
+        if (isPressed) this.p1.triggerJump();
+      } else if (action === 'drop') {
+        if (isPressed) {
+          if (this.p1.y < 420 && this.p1.grounded) this.p1.dropDown();
+          else this.p1.block(true);
+        } else {
+          this.p1.block(false);
+        }
+      } else if (action === 'block') {
+        this.p1.block(isPressed);
+      } else if (action === 'dash') {
+        if (isPressed) this.p1.dash(this);
+      } else if (action === 'punch') {
+        if (isPressed) this.p1.punch(this.p2, this);
+      } else if (action === 'kick') {
+        if (isPressed) this.p1.kick(this.p2, this);
+      } else if (action === 'super') {
+        if (isPressed) this.p1.fireSuper(this);
+      }
+
+      // 2-Player Split Tablet Actions
+      if (this.touchMode === '2P_SPLIT') {
+        if (action === 'p1-left') isPressed ? this.p1.move(-1) : this.p1.stopMove();
+        if (action === 'p1-right') isPressed ? this.p1.move(1) : this.p1.stopMove();
+        if (action === 'p1-jump' && isPressed) this.p1.triggerJump();
+        if (action === 'p1-punch' && isPressed) this.p1.punch(this.p2, this);
+        if (action === 'p1-kick' && isPressed) this.p1.kick(this.p2, this);
+        if (action === 'p1-block') this.p1.block(isPressed);
+        if (action === 'p1-dash' && isPressed) this.p1.dash(this);
+
+        if (action === 'p2-left') isPressed ? this.p2.move(-1) : this.p2.stopMove();
+        if (action === 'p2-right') isPressed ? this.p2.move(1) : this.p2.stopMove();
+        if (action === 'p2-jump' && isPressed) this.p2.triggerJump();
+        if (action === 'p2-punch' && isPressed) this.p2.punch(this.p1, this);
+        if (action === 'p2-kick' && isPressed) this.p2.kick(this.p1, this);
+        if (action === 'p2-block') this.p2.block(isPressed);
+        if (action === 'p2-dash' && isPressed) this.p2.dash(this);
+      }
+    };
+
+    // Attach Pointer events to all touch buttons
+    const buttons = document.querySelectorAll('.touch-btn');
+    buttons.forEach(btn => {
+      const action = btn.dataset.btn;
+
+      const onPointerDown = (e) => {
+        e.preventDefault();
+        sfx.init();
+        btn.setPointerCapture(e.pointerId);
+        btn.classList.add('pressed');
+        this.activeTouchPointers.set(e.pointerId, { btn, action });
+        handleTouchAction(action, true);
+      };
+
+      const onPointerUp = (e) => {
+        e.preventDefault();
+        btn.classList.remove('pressed');
+        if (this.activeTouchPointers.has(e.pointerId)) {
+          this.activeTouchPointers.delete(e.pointerId);
+          handleTouchAction(action, false);
+        }
+      };
+
+      const onPointerCancel = (e) => {
+        btn.classList.remove('pressed');
+        if (this.activeTouchPointers.has(e.pointerId)) {
+          this.activeTouchPointers.delete(e.pointerId);
+          handleTouchAction(action, false);
+        }
+      };
+
+      btn.addEventListener('pointerdown', onPointerDown);
+      btn.addEventListener('pointerup', onPointerUp);
+      btn.addEventListener('pointercancel', onPointerCancel);
+    });
+  }
+
+  // Poll standard Gamepad controllers
   pollGamepads() {
     if (!navigator.getGamepads) return;
     const gamepads = navigator.getGamepads();
 
-    // Gamepad 1 -> Controls Player 1
     if (gamepads[0]) {
       const gp = gamepads[0];
       const axisX = gp.axes[0];
       const axisY = gp.axes[1];
 
-      if (axisX < -0.3 || gp.buttons[14].pressed) this.p1.move(-1);
-      else if (axisX > 0.3 || gp.buttons[15].pressed) this.p1.move(1);
+      if (axisX < -0.3 || (gp.buttons[14] && gp.buttons[14].pressed)) this.p1.move(-1);
+      else if (axisX > 0.3 || (gp.buttons[15] && gp.buttons[15].pressed)) this.p1.move(1);
       else this.p1.stopMove();
 
-      if (axisY > 0.6 || gp.buttons[13].pressed) this.p1.dropDown();
+      if (axisY > 0.6 || (gp.buttons[13] && gp.buttons[13].pressed)) this.p1.dropDown();
 
-      if (gp.buttons[0].pressed) this.p1.triggerJump(); // A / Cross
-      if (gp.buttons[2].pressed) this.p1.punch(this.p2, this); // X / Square
-      if (gp.buttons[1].pressed) this.p1.kick(this.p2, this); // B / Circle
-      if (gp.buttons[3].pressed) this.p1.fireSuper(this); // Y / Triangle
-      if (gp.buttons[4].pressed || gp.buttons[5].pressed) this.p1.dash(this); // LB / RB
-      this.p1.block(gp.buttons[6].pressed || gp.buttons[7].pressed); // LT / RT
+      if (gp.buttons[0] && gp.buttons[0].pressed) this.p1.triggerJump();
+      if (gp.buttons[2] && gp.buttons[2].pressed) this.p1.punch(this.p2, this);
+      if (gp.buttons[1] && gp.buttons[1].pressed) this.p1.kick(this.p2, this);
+      if (gp.buttons[3] && gp.buttons[3].pressed) this.p1.fireSuper(this);
+      if ((gp.buttons[4] && gp.buttons[4].pressed) || (gp.buttons[5] && gp.buttons[5].pressed)) this.p1.dash(this);
+      this.p1.block((gp.buttons[6] && gp.buttons[6].pressed) || (gp.buttons[7] && gp.buttons[7].pressed));
     }
 
-    // Gamepad 2 -> Controls Player 2 (if present)
     if (gamepads[1] && this.mode === '2P') {
       const gp = gamepads[1];
       const axisX = gp.axes[0];
       const axisY = gp.axes[1];
 
-      if (axisX < -0.3 || gp.buttons[14].pressed) this.p2.move(-1);
-      else if (axisX > 0.3 || gp.buttons[15].pressed) this.p2.move(1);
+      if (axisX < -0.3 || (gp.buttons[14] && gp.buttons[14].pressed)) this.p2.move(-1);
+      else if (axisX > 0.3 || (gp.buttons[15] && gp.buttons[15].pressed)) this.p2.move(1);
       else this.p2.stopMove();
 
-      if (axisY > 0.6 || gp.buttons[13].pressed) this.p2.dropDown();
+      if (axisY > 0.6 || (gp.buttons[13] && gp.buttons[13].pressed)) this.p2.dropDown();
 
-      if (gp.buttons[0].pressed) this.p2.triggerJump();
-      if (gp.buttons[2].pressed) this.p2.punch(this.p1, this);
-      if (gp.buttons[1].pressed) this.p2.kick(this.p1, this);
-      if (gp.buttons[3].pressed) this.p2.fireSuper(this);
-      if (gp.buttons[4].pressed || gp.buttons[5].pressed) this.p2.dash(this);
-      this.p2.block(gp.buttons[6].pressed || gp.buttons[7].pressed);
+      if (gp.buttons[0] && gp.buttons[0].pressed) this.p2.triggerJump();
+      if (gp.buttons[2] && gp.buttons[2].pressed) this.p2.punch(this.p1, this);
+      if (gp.buttons[1] && gp.buttons[1].pressed) this.p2.kick(this.p1, this);
+      if (gp.buttons[3] && gp.buttons[3].pressed) this.p2.fireSuper(this);
+      if ((gp.buttons[4] && gp.buttons[4].pressed) || (gp.buttons[5] && gp.buttons[5].pressed)) this.p2.dash(this);
+      this.p2.block((gp.buttons[6] && gp.buttons[6].pressed) || (gp.buttons[7] && gp.buttons[7].pressed));
     }
   }
 
@@ -942,6 +1069,18 @@ class StickmanGame {
     this.p2.roundsWon = 0;
 
     document.getElementById('p2-display-name').textContent = mode === 'AI' ? 'BOT (AI)' : 'PLAYER 2';
+
+    // Toggle touch UI based on selected mode
+    const isTouchEnabled = document.getElementById('toggle-touch').checked;
+    if (isTouchEnabled) {
+      if (this.touchMode === '2P_SPLIT') {
+        this.domTouch1P.classList.add('hidden');
+        this.domTouch2P.classList.remove('hidden');
+      } else {
+        this.domTouch1P.classList.remove('hidden');
+        this.domTouch2P.classList.add('hidden');
+      }
+    }
 
     this.domMenuOverlay.classList.add('hidden');
     this.domGameOverOverlay.classList.add('hidden');
@@ -1043,6 +1182,13 @@ class StickmanGame {
     this.domP1Super.style.width = `${this.p1.superMeter}%`;
     this.domP2Super.style.width = `${this.p2.superMeter}%`;
 
+    // Glow on Super Button when meter is 100%
+    if (this.p1.superMeter >= 100) {
+      this.domSuperBtn.classList.add('ready');
+    } else {
+      this.domSuperBtn.classList.remove('ready');
+    }
+
     for (let i = 0; i < 2; i++) {
       if (i < this.p1.roundsWon) this.domP1Rounds[i].classList.add('won');
       else this.domP1Rounds[i].classList.remove('won');
@@ -1074,112 +1220,62 @@ class StickmanGame {
     this.floatingTexts.push(new FloatingText(text, x, y, color));
   }
 
-  // Handle Ultra-Responsive Keyboard & Gamepad Inputs
   handleInputs() {
     if (this.state !== 'PLAYING') return;
 
     this.pollGamepads();
 
-    // ==========================================
-    // --- PLAYER 1 (Left hand: WASD + F/G/V/Q) ---
-    // ==========================================
+    // Keyboard P1
     if (this.keys['KeyA']) this.p1.move(-1);
     else if (this.keys['KeyD']) this.p1.move(1);
-    else this.p1.stopMove();
+    else if (!this.activeTouchPointers.size) this.p1.stopMove();
 
-    // Jump (W or Space)
-    if (this.justPressed['KeyW'] || this.justPressed['Space']) {
-      this.p1.triggerJump();
-    }
+    if (this.justPressed['KeyW'] || this.justPressed['Space']) this.p1.triggerJump();
 
-    // Drop Down (Hold S on upper platforms)
     if (this.keys['KeyS']) {
-      if (this.p1.y < 420 && this.p1.grounded) {
-        this.p1.dropDown();
-      } else {
-        this.p1.block(true);
-      }
+      if (this.p1.y < 420 && this.p1.grounded) this.p1.dropDown();
+      else this.p1.block(true);
     }
     if (this.keys['KeyC']) this.p1.block(true);
 
-    // Dash / Dodge (Q or E)
-    if (this.justPressed['KeyQ'] || this.justPressed['KeyE']) {
-      this.p1.dash(this);
-    }
+    if (this.justPressed['KeyQ'] || this.justPressed['KeyE']) this.p1.dash(this);
+    if (this.justPressed['KeyF'] || this.justPressed['KeyJ']) this.p1.punch(this.p2, this);
+    if (this.justPressed['KeyG'] || this.justPressed['KeyK']) this.p1.kick(this.p2, this);
+    if (this.justPressed['KeyV'] || this.justPressed['KeyR']) this.p1.fireSuper(this);
 
-    // Punch (F or J)
-    if (this.justPressed['KeyF'] || this.justPressed['KeyJ']) {
-      this.p1.punch(this.p2, this);
-    }
-
-    // Kick (G or K)
-    if (this.justPressed['KeyG'] || this.justPressed['KeyK']) {
-      this.p1.kick(this.p2, this);
-    }
-
-    // Super (V or R)
-    if (this.justPressed['KeyV'] || this.justPressed['KeyR']) {
-      this.p1.fireSuper(this);
-    }
-
-    // ==========================================
-    // --- PLAYER 2 (Arrows + L/K/M/I or NumPad) -
-    // ==========================================
-    if (this.mode === '2P') {
+    // Keyboard P2 (if 2P mode and not split touch)
+    if (this.mode === '2P' && this.touchMode !== '2P_SPLIT') {
       if (this.keys['ArrowLeft'] || this.keys['Numpad4']) this.p2.move(-1);
       else if (this.keys['ArrowRight'] || this.keys['Numpad6']) this.p2.move(1);
       else this.p2.stopMove();
 
-      // Jump (Up or Numpad 8/0)
       if (this.justPressed['ArrowUp'] || this.justPressed['Numpad8'] || this.justPressed['Numpad0']) {
         this.p2.triggerJump();
       }
 
-      // Drop down or Block (Down or Numpad 2/1)
       if (this.keys['ArrowDown'] || this.keys['Numpad2']) {
-        if (this.p2.y < 420 && this.p2.grounded) {
-          this.p2.dropDown();
-        } else {
-          this.p2.block(true);
-        }
+        if (this.p2.y < 420 && this.p2.grounded) this.p2.dropDown();
+        else this.p2.block(true);
       }
       if (this.keys['Numpad1']) this.p2.block(true);
 
-      // Dash (I or Numpad 7)
-      if (this.justPressed['KeyI'] || this.justPressed['Numpad7']) {
-        this.p2.dash(this);
-      }
-
-      // Punch (L or Numpad 4/5)
-      if (this.justPressed['KeyL']) {
-        this.p2.punch(this.p1, this);
-      }
-
-      // Kick (K or Numpad 5/6)
-      if (this.justPressed['KeyK'] || this.justPressed['Numpad5']) {
-        this.p2.kick(this.p1, this);
-      }
-
-      // Super (M or NumpadEnter)
-      if (this.justPressed['KeyM'] || this.justPressed['NumpadEnter']) {
-        this.p2.fireSuper(this);
-      }
-    } else {
+      if (this.justPressed['KeyI'] || this.justPressed['Numpad7']) this.p2.dash(this);
+      if (this.justPressed['KeyL']) this.p2.punch(this.p1, this);
+      if (this.justPressed['KeyK'] || this.justPressed['Numpad5']) this.p2.kick(this.p1, this);
+      if (this.justPressed['KeyM'] || this.justPressed['NumpadEnter']) this.p2.fireSuper(this);
+    } else if (this.mode === 'AI') {
       this.handleAIBot();
     }
 
-    // Clear just-pressed buffer at end of frame
     this.justPressed = {};
   }
 
-  // Tactical AI Competitor (Uses Dash, Drop-Down & Combos)
   handleAIBot() {
     const dist = Math.abs(this.p2.x - this.p1.x);
     const vertDist = Math.abs(this.p2.y - this.p1.y);
 
     this.p2.facing = this.p1.x > this.p2.x ? 1 : -1;
 
-    // Edge recovery
     if (this.p2.x < 210 && this.p2.grounded) {
       this.p2.move(1);
       this.p2.triggerJump();
@@ -1191,27 +1287,22 @@ class StickmanGame {
       return;
     }
 
-    // Drop down if player is on the lower platform
     if (this.p2.y < 400 && this.p1.y > 440 && Math.random() < 0.03) {
       this.p2.dropDown();
     }
 
-    // Fire Super if meter is full
     if (this.p2.superMeter >= 100 && Math.random() < 0.05) {
       this.p2.fireSuper(this);
       return;
     }
 
-    // Tactical Dash to close distance or escape
     if (dist > 180 && dist < 320 && Math.random() < 0.03) {
       this.p2.dash(this);
     }
 
-    // Combat Range
     if (dist < 60 && vertDist < 45) {
       this.p2.stopMove();
 
-      // Block against incoming strikes
       if (this.p1.isPunching || this.p1.isKicking) {
         if (Math.random() < 0.65) {
           this.p2.block(true);
@@ -1221,7 +1312,6 @@ class StickmanGame {
         this.p2.block(false);
       }
 
-      // Attack
       const actionRoll = Math.random();
       if (actionRoll < 0.1) {
         this.p2.punch(this.p1, this);
@@ -1302,14 +1392,9 @@ class StickmanGame {
     this.drawArenaBackdrop();
     this.drawPlatforms();
 
-    // Ghost trails under characters
     this.ghostTrails.forEach(gt => gt.draw(this.ctx));
-
-    // Characters
     this.p1.draw(this.ctx);
     this.p2.draw(this.ctx);
-
-    // Projectiles & Particles
     this.projectiles.forEach(p => p.draw(this.ctx));
     this.particles.forEach(pt => pt.draw(this.ctx));
     this.floatingTexts.forEach(ft => ft.draw(this.ctx));
@@ -1355,7 +1440,6 @@ class StickmanGame {
   loop() {
     this.update();
     this.draw();
-
     requestAnimationFrame(() => this.loop());
   }
 }
