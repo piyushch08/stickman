@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Stickman Arena: 1v1 Battle</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Rajdhani:wght@600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div id="game-wrapper">
+    <!-- Top HUD: Health Bars, Timer, Round Badges -->
+    <header id="game-hud">
+      <!-- Player 1 Info -->
+      <div class="player-hud p1-hud">
+        <div class="player-meta">
+          <span class="player-name" id="p1-display-name">PLAYER 1</span>
+          <div class="round-markers" id="p1-rounds">
+            <span class="dot"></span>
+            <span class="dot"></span>
+          </div>
+        </div>
+        <div class="bar-container health-container">
+          <div class="bar-fill health-bar" id="p1-health" style="width: 100%;"></div>
+        </div>
+        <div class="bar-container super-container">
+          <div class="bar-fill super-bar" id="p1-super" style="width: 0%;"></div>
+        </div>
+      </div>
+
+      <!-- Center Match Info -->
+      <div id="center-hud">
+        <div id="match-timer">60</div>
+        <div id="round-title">ROUND 1</div>
+      </div>
+
+      <!-- Player 2 Info -->
+      <div class="player-hud p2-hud">
+        <div class="player-meta">
+          <div class="round-markers" id="p2-rounds">
+            <span class="dot"></span>
+            <span class="dot"></span>
+          </div>
+          <span class="player-name" id="p2-display-name">PLAYER 2</span>
+        </div>
+        <div class="bar-container health-container">
+          <div class="bar-fill health-bar" id="p2-health" style="width: 100%;"></div>
+        </div>
+        <div class="bar-container super-container">
+          <div class="bar-fill super-bar" id="p2-super" style="width: 0%;"></div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Canvas Game Arena -->
+    <main id="canvas-container">
+      <canvas id="gameCanvas" width="1000" height="600"></canvas>
+      
+      <!-- Big Center Callout (Round 1, Fight, KO) -->
+      <div id="callout-overlay" class="hidden">
+        <h1 id="callout-text">FIGHT!</h1>
+      </div>
+    </main>
+
+    <!-- Start / Pause / Win Modals -->
+    <div id="menu-overlay" class="overlay active">
+      <div class="menu-card">
+        <h1 class="game-logo">⚡ STICKMAN <span>CLASH</span> ⚡</h1>
+        <p class="tagline">Intense 1v1 Competitive Stick Fighter</p>
+
+        <div class="menu-modes">
+          <button class="btn btn-primary" id="btn-mode-2p">👥 2 Players (Local Keyboard)</button>
+          <button class="btn btn-secondary" id="btn-mode-ai">🤖 1 Player vs AI Bot</button>
+          <button class="btn btn-outline" id="btn-controls">🎮 Controls & Guide</button>
+        </div>
+
+        <div class="settings-strip">
+          <label>
+            <input type="checkbox" id="toggle-sfx" checked> Sound FX
+          </label>
+          <label>
+            <input type="checkbox" id="toggle-particles" checked> Hit Sparks
+          </label>
+          <label>
+            <input type="checkbox" id="toggle-touch"> Touch Controls
+          </label>
+        </div>
+      </div>
+    </div>
+
+    <!-- Controls Guide Modal -->
+    <div id="controls-overlay" class="overlay hidden">
+      <div class="menu-card controls-card">
+        <h2>HOW TO PLAY</h2>
+        <div class="controls-grid">
+          <div class="control-col p1-box">
+            <h3>🔵 PLAYER 1</h3>
+            <ul>
+              <li><kbd>W</kbd> Jump (Double Jump)</li>
+              <li><kbd>A</kbd> / <kbd>D</kbd> Move Left / Right</li>
+              <li><kbd>S</kbd> Block (Reduce 75% Dmg)</li>
+              <li><kbd>F</kbd> Punch (Quick)</li>
+              <li><kbd>G</kbd> Kick (Heavy Knockback)</li>
+              <li><kbd>V</kbd> 🔥 Super Blast (Requires Full Bar)</li>
+            </ul>
+          </div>
+          <div class="control-col p2-box">
+            <h3>🔴 PLAYER 2 (or AI)</h3>
+            <ul>
+              <li><kbd>▲</kbd> Jump (Double Jump)</li>
+              <li><kbd>◀</kbd> / <kbd>▶</kbd> Move Left / Right</li>
+              <li><kbd>▼</kbd> Block (Reduce 75% Dmg)</li>
+              <li><kbd>L</kbd> Punch (Quick)</li>
+              <li><kbd>K</kbd> Kick (Heavy Knockback)</li>
+              <li><kbd>M</kbd> 🔥 Super Blast (Requires Full Bar)</li>
+            </ul>
+          </div>
+        </div>
+        <p class="guide-tip">💡 <strong>Pro Tip:</strong> Deplete your opponent's HP or knock them completely off the stage platforms to win!</p>
+        <button class="btn btn-primary" id="btn-close-controls">BACK TO MENU</button>
+      </div>
+    </div>
+
+    <!-- Game Over / Victory Modal -->
+    <div id="gameover-overlay" class="overlay hidden">
+      <div class="menu-card victory-card">
+        <h2 id="victory-header">VICTORY!</h2>
+        <p id="victory-sub">Player 1 wins the match!</p>
+        <div class="victory-buttons">
+          <button class="btn btn-primary" id="btn-rematch">🔄 PLAY AGAIN</button>
+          <button class="btn btn-secondary" id="btn-back-menu">🏠 MAIN MENU</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- On-screen Touch Controls (For tablets / mobile) -->
+    <div id="touch-controls" class="hidden">
+      <div class="touch-group touch-left">
+        <button class="touch-btn" id="tb-left">◀</button>
+        <button class="touch-btn" id="tb-right">▶</button>
+        <button class="touch-btn" id="tb-jump">▲</button>
+        <button class="touch-btn" id="tb-block">🛡️</button>
+      </div>
+      <div class="touch-group touch-right">
+        <button class="touch-btn touch-action" id="tb-punch">👊 PUNCH</button>
+        <button class="touch-btn touch-action" id="tb-kick">🦵 KICK</button>
+        <button class="touch-btn touch-super" id="tb-super">⚡ SUPER</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="game.js"></script>
+</body>
+</html>
+

@@ -1,0 +1,29 @@
+================================================================================
+STICKMAN CLASH: 1v1 ARENA FIGHTER
+A Fast-Paced Competitive Multiplayer Stickman Game
+================================================================================
+
+HOW TO RUN:
+Open 'index.html' in your browser (Double click or use VS Code Live Server).
+
+FEATURES:
+- 👥 2 Players on 1 Keyboard (Local Co-op / Versus)
+- 🤖 Single Player vs Intelligent AI Bot (with blocking and combos)
+- ⚔️ Full Combat System: Jab Punch, High Kick, Shield Block, and Super Blast
+- 💥 Ring-Out & Platform Physics (Knock opponents off the floating arena into the abyss!)
+- 🎵 100% Zero-Dependency Web Audio Synth (Punch, Kick, Block, Jump, Super Blast, KO Fanfare)
+- 📱 Optional On-Screen Touch Controls for Mobile / Tablets
+- 🏆 Best of 3 Rounds Tournament Rules
+
+CONTROLS:
+--------------------------------------------------------------------------------
+ACTION          | PLAYER 1 (Blue)          | PLAYER 2 (Red / AI)
+--------------------------------------------------------------------------------
+Move Left/Right | [A] / [D]                | [Left Arrow] / [Right Arrow]
+Jump (Double)   | [W]                      | [Up Arrow]
+Block (Shield)  | [S] (Reduces 75% Dmg)    | [Down Arrow]
+Punch (Quick)   | [F]                      | [L]
+Kick (Heavy)    | [G]                      | [K]
+Super Blast     | [V] (Requires 100% Bar)  | [M] (Requires 100% Bar)
+--------------------------------------------------------------------------------
+
