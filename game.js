@@ -1,7 +1,7 @@
 /**
- * STICKMAN CLASH - 1v1 Arena Fighter
- * High-performance HTML5 Canvas physics, stickman skeletal animation,
- * synthesized sound effects, AI bot & 2-player local multiplayer.
+ * STICKMAN CLASH - 1v1 Arena Fighter (Pro Controls Edition)
+ * Enhanced with Input Buffering, Coyote Time, Jump Buffering, Air Attacks,
+ * 3-Hit Combos, Dash/Roll Dodging, Platform Drop-Through, and Gamepad Support.
  */
 
 // ============================================================================
@@ -23,13 +23,14 @@ class SoundFX {
     }
   }
 
-  playPunch() {
+  playPunch(combo = 1) {
     if (!this.enabled || !this.ctx) return;
     const osc = this.ctx.createOscillator();
     const gain = this.ctx.createGain();
+    const baseFreq = 140 + combo * 35;
     osc.type = 'triangle';
-    osc.frequency.setValueAtTime(160, this.ctx.currentTime);
-    osc.frequency.exponentialRampToValueAtTime(40, this.ctx.currentTime + 0.12);
+    osc.frequency.setValueAtTime(baseFreq, this.ctx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(35, this.ctx.currentTime + 0.12);
     gain.gain.setValueAtTime(0.4, this.ctx.currentTime);
     gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.12);
     osc.connect(gain);
@@ -38,19 +39,34 @@ class SoundFX {
     osc.stop(this.ctx.currentTime + 0.12);
   }
 
-  playKick() {
+  playKick(isAir = false) {
     if (!this.enabled || !this.ctx) return;
     const osc = this.ctx.createOscillator();
     const gain = this.ctx.createGain();
     osc.type = 'sine';
-    osc.frequency.setValueAtTime(240, this.ctx.currentTime);
-    osc.frequency.exponentialRampToValueAtTime(30, this.ctx.currentTime + 0.18);
-    gain.gain.setValueAtTime(0.6, this.ctx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.18);
+    osc.frequency.setValueAtTime(isAir ? 320 : 220, this.ctx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(30, this.ctx.currentTime + 0.2);
+    gain.gain.setValueAtTime(0.55, this.ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.2);
     osc.connect(gain);
     gain.connect(this.ctx.destination);
     osc.start();
-    osc.stop(this.ctx.currentTime + 0.18);
+    osc.stop(this.ctx.currentTime + 0.2);
+  }
+
+  playDash() {
+    if (!this.enabled || !this.ctx) return;
+    const osc = this.ctx.createOscillator();
+    const gain = this.ctx.createGain();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(450, this.ctx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(100, this.ctx.currentTime + 0.15);
+    gain.gain.setValueAtTime(0.25, this.ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.15);
+    osc.connect(gain);
+    gain.connect(this.ctx.destination);
+    osc.start();
+    osc.stop(this.ctx.currentTime + 0.15);
   }
 
   playBlock() {
@@ -59,7 +75,7 @@ class SoundFX {
     const gain = this.ctx.createGain();
     osc.type = 'square';
     osc.frequency.setValueAtTime(420, this.ctx.currentTime);
-    osc.frequency.setValueAtTime(600, this.ctx.currentTime + 0.04);
+    osc.frequency.setValueAtTime(620, this.ctx.currentTime + 0.04);
     gain.gain.setValueAtTime(0.2, this.ctx.currentTime);
     gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.1);
     osc.connect(gain);
@@ -73,8 +89,8 @@ class SoundFX {
     const osc = this.ctx.createOscillator();
     const gain = this.ctx.createGain();
     osc.type = 'sine';
-    osc.frequency.setValueAtTime(150, this.ctx.currentTime);
-    osc.frequency.exponentialRampToValueAtTime(350, this.ctx.currentTime + 0.12);
+    osc.frequency.setValueAtTime(160, this.ctx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(360, this.ctx.currentTime + 0.12);
     gain.gain.setValueAtTime(0.2, this.ctx.currentTime);
     gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.12);
     osc.connect(gain);
@@ -88,14 +104,14 @@ class SoundFX {
     const osc = this.ctx.createOscillator();
     const gain = this.ctx.createGain();
     osc.type = 'sawtooth';
-    osc.frequency.setValueAtTime(200, this.ctx.currentTime);
-    osc.frequency.linearRampToValueAtTime(800, this.ctx.currentTime + 0.25);
+    osc.frequency.setValueAtTime(180, this.ctx.currentTime);
+    osc.frequency.linearRampToValueAtTime(850, this.ctx.currentTime + 0.28);
     gain.gain.setValueAtTime(0.35, this.ctx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.3);
+    gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.32);
     osc.connect(gain);
     gain.connect(this.ctx.destination);
     osc.start();
-    osc.stop(this.ctx.currentTime + 0.3);
+    osc.stop(this.ctx.currentTime + 0.32);
   }
 
   playKO() {
@@ -120,7 +136,7 @@ class SoundFX {
 const sfx = new SoundFX();
 
 // ============================================================================
-// PARTICLE & FLOATING TEXT ENGINE
+// PARTICLES & GHOST TRAIL (For Dashing & Hits)
 // ============================================================================
 class Particle {
   constructor(x, y, color, vx, vy, size = 3, life = 25) {
@@ -137,7 +153,7 @@ class Particle {
   update() {
     this.x += this.vx;
     this.y += this.vy;
-    this.vy += 0.2; // gravity
+    this.vy += 0.2;
     this.life--;
   }
 
@@ -149,6 +165,39 @@ class Particle {
     ctx.beginPath();
     ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
     ctx.fill();
+    ctx.restore();
+  }
+}
+
+class GhostTrail {
+  constructor(x, y, facing, color) {
+    this.x = x;
+    this.y = y;
+    this.facing = facing;
+    this.color = color;
+    this.life = 12;
+    this.maxLife = 12;
+  }
+
+  update() {
+    this.life--;
+  }
+
+  draw(ctx) {
+    const alpha = Math.max(0, (this.life / this.maxLife) * 0.35);
+    ctx.save();
+    ctx.globalAlpha = alpha;
+    ctx.strokeStyle = this.color;
+    ctx.lineWidth = 4;
+    ctx.beginPath();
+    ctx.arc(this.x, this.y - 68, 11, 0, Math.PI * 2);
+    ctx.moveTo(this.x, this.y - 57);
+    ctx.lineTo(this.x, this.y - 28);
+    ctx.moveTo(this.x, this.y - 28);
+    ctx.lineTo(this.x - this.facing * 12, this.y);
+    ctx.moveTo(this.x, this.y - 28);
+    ctx.lineTo(this.x + this.facing * 12, this.y);
+    ctx.stroke();
     ctx.restore();
   }
 }
@@ -187,10 +236,10 @@ class Projectile {
   constructor(x, y, dir, owner) {
     this.x = x;
     this.y = y;
-    this.dir = dir; // 1 or -1
+    this.dir = dir;
     this.owner = owner;
     this.radius = 16;
-    this.speed = 12 * dir;
+    this.speed = 13 * dir;
     this.damage = 25;
     this.color = owner.color;
     this.active = true;
@@ -198,7 +247,7 @@ class Projectile {
 
   update(arena) {
     this.x += this.speed;
-    if (this.x < -50 || this.x > arena.width + 50) {
+    if (this.x < -60 || this.x > arena.width + 60) {
       this.active = false;
     }
   }
@@ -207,7 +256,7 @@ class Projectile {
     ctx.save();
     ctx.fillStyle = this.color;
     ctx.shadowColor = this.color;
-    ctx.shadowBlur = 20;
+    ctx.shadowBlur = 22;
     ctx.beginPath();
     ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
     ctx.fill();
@@ -216,7 +265,7 @@ class Projectile {
 }
 
 // ============================================================================
-// STICKMAN FIGHTER CLASS
+// STICKMAN FIGHTER CLASS (Fluid Movement & Combat)
 // ============================================================================
 class Stickman {
   constructor(x, y, color, isP1 = true) {
@@ -232,30 +281,47 @@ class Stickman {
     this.isP1 = isP1;
     this.facing = isP1 ? 1 : -1;
 
-    // Stats
+    // Combat Stats
     this.maxHealth = 100;
     this.health = 100;
-    this.superMeter = 0; // 0 to 100
+    this.superMeter = 0;
     this.roundsWon = 0;
 
-    // Movement & Physics
-    this.speed = 5.5;
-    this.jumpForce = -13.5;
-    this.gravity = 0.65;
+    // Physics & Movement Feel
+    this.speed = 6.0;
+    this.jumpForce = -13.8;
+    this.gravity = 0.68;
     this.grounded = false;
     this.jumpCount = 0;
-    this.maxJumps = 2; // Double jump!
+    this.maxJumps = 2; // Double Jump
 
-    // Actions & States
+    // Platform pass-through (drop down)
+    this.dropThroughTimer = 0;
+
+    // Advanced Responsiveness: Coyote Time & Jump Buffering
+    this.coyoteTimer = 0; // Frames allowed to jump after stepping off a platform
+    this.jumpBufferTimer = 0; // Frames allowed to execute jump upon landing
+
+    // Dash / Dodge Roll
+    this.dashTimer = 0;
+    this.dashCooldown = 0;
+    this.isInvincible = false;
+
+    // Combo System (1-2-3 Punch)
+    this.comboStep = 0;
+    this.comboResetTimer = 0;
+
+    // Action Timers
     this.isBlocking = false;
     this.isPunching = false;
     this.isKicking = false;
+    this.isAirKicking = false;
     this.punchTimer = 0;
     this.kickTimer = 0;
     this.hitStun = 0;
     this.isDead = false;
 
-    // Animation Cycle
+    // Visuals
     this.animTime = 0;
   }
 
@@ -271,70 +337,130 @@ class Stickman {
     this.isBlocking = false;
     this.isPunching = false;
     this.isKicking = false;
+    this.isAirKicking = false;
     this.punchTimer = 0;
     this.kickTimer = 0;
     this.hitStun = 0;
+    this.dashTimer = 0;
+    this.dashCooldown = 0;
+    this.dropThroughTimer = 0;
+    this.comboStep = 0;
     this.isDead = false;
     this.facing = this.isP1 ? 1 : -1;
   }
 
-  moveLeft() {
-    if (this.hitStun > 0 || this.isBlocking || this.isDead) return;
-    this.vx = -this.speed;
-    this.facing = -1;
-  }
-
-  moveRight() {
-    if (this.hitStun > 0 || this.isBlocking || this.isDead) return;
-    this.vx = this.speed;
-    this.facing = 1;
+  move(dir) {
+    if (this.hitStun > 0 || this.dashTimer > 0 || this.isBlocking || this.isDead) return;
+    this.vx = dir * this.speed;
+    this.facing = dir;
   }
 
   stopMove() {
-    if (this.hitStun > 0) return;
-    this.vx *= 0.7;
+    if (this.hitStun > 0 || this.dashTimer > 0) return;
+    this.vx *= 0.65;
     if (Math.abs(this.vx) < 0.2) this.vx = 0;
   }
 
-  jump() {
-    if (this.hitStun > 0 || this.isBlocking || this.isDead) return;
-    if (this.jumpCount < this.maxJumps) {
+  triggerJump() {
+    this.jumpBufferTimer = 8; // Buffer jump request for 8 frames
+  }
+
+  executeJump() {
+    if (this.hitStun > 0 || this.dashTimer > 0 || this.isBlocking || this.isDead) return;
+
+    if (this.grounded || this.coyoteTimer > 0) {
       this.vy = this.jumpForce;
-      this.jumpCount++;
       this.grounded = false;
+      this.coyoteTimer = 0;
+      this.jumpCount = 1;
+      this.jumpBufferTimer = 0;
+      sfx.playJump();
+    } else if (this.jumpCount < this.maxJumps) {
+      // Double Jump
+      this.vy = this.jumpForce * 0.95;
+      this.jumpCount++;
+      this.jumpBufferTimer = 0;
       sfx.playJump();
     }
   }
 
+  dropDown() {
+    // Drop down through upper floating platforms
+    if (this.grounded && this.y < 420) {
+      this.dropThroughTimer = 16;
+      this.grounded = false;
+      this.y += 4;
+      this.vy = 2;
+    }
+  }
+
+  dash(game) {
+    if (this.hitStun > 0 || this.dashCooldown > 0 || this.dashTimer > 0 || this.isDead) return;
+    this.dashTimer = 12; // 12 active dash frames
+    this.dashCooldown = 32; // Cooldown frames
+    this.isInvincible = true;
+    this.vx = this.facing * 14;
+    this.vy = 0;
+    sfx.playDash();
+
+    // Spawn ghost trails
+    game.ghostTrails.push(new GhostTrail(this.x, this.y, this.facing, this.color));
+  }
+
   block(active) {
-    if (this.hitStun > 0 || this.isDead) return;
+    if (this.hitStun > 0 || this.dashTimer > 0 || this.isDead) return;
     this.isBlocking = active;
     if (active) this.vx = 0;
   }
 
   punch(opponent, game) {
-    if (this.hitStun > 0 || this.isPunching || this.isKicking || this.isBlocking || this.isDead) return;
+    if (this.hitStun > 0 || this.dashTimer > 0 || this.isPunching || this.isKicking || this.isBlocking || this.isDead) return;
+
+    // Advance combo step (1 -> 2 -> 3)
+    this.comboStep = (this.comboStep % 3) + 1;
+    this.comboResetTimer = 28;
+
     this.isPunching = true;
-    this.punchTimer = 14;
-    sfx.playPunch();
+    this.punchTimer = 12;
+
+    sfx.playPunch(this.comboStep);
 
     // Hitbox detection
-    const reach = 55;
+    const reach = 55 + (this.comboStep === 3 ? 12 : 0);
     const hitX = this.x + this.facing * reach;
     const dist = Math.abs(hitX - opponent.x);
     const vertDist = Math.abs(this.y - opponent.y);
 
-    if (dist < 45 && vertDist < 50) {
-      opponent.takeDamage(10, this.facing * 4, -4, game, 'PUNCH');
-      this.addSuper(12);
+    if (dist < 46 && vertDist < 50) {
+      const isFinisher = this.comboStep === 3;
+      const damage = isFinisher ? 16 : 8;
+      const knockX = this.facing * (isFinisher ? 10 : 3.5);
+      const knockY = isFinisher ? -7 : -2;
+
+      opponent.takeDamage(damage, knockX, knockY, game, isFinisher ? 'COMBO' : 'PUNCH');
+      this.addSuper(isFinisher ? 18 : 10);
+
+      if (isFinisher) {
+        game.addFloatingText('3-HIT COMBO!', this.x, this.y - 70, '#facc15');
+      }
     }
   }
 
   kick(opponent, game) {
-    if (this.hitStun > 0 || this.isPunching || this.isKicking || this.isBlocking || this.isDead) return;
+    if (this.hitStun > 0 || this.dashTimer > 0 || this.isPunching || this.isKicking || this.isBlocking || this.isDead) return;
+
     this.isKicking = true;
-    this.kickTimer = 22;
-    sfx.playKick();
+    this.isAirKicking = !this.grounded;
+    this.kickTimer = 18;
+
+    if (this.isAirKicking) {
+      // Aerial dive kick!
+      this.vy = 8;
+      this.vx = this.facing * 7;
+      sfx.playKick(true);
+    } else {
+      sfx.playKick(false);
+    }
 
     // Hitbox detection
     const reach = 65;
@@ -342,18 +468,22 @@ class Stickman {
     const dist = Math.abs(hitX - opponent.x);
     const vertDist = Math.abs(this.y - opponent.y);
 
-    if (dist < 50 && vertDist < 55) {
-      opponent.takeDamage(18, this.facing * 10, -7, game, 'KICK');
-      this.addSuper(18);
+    if (dist < 52 && vertDist < 55) {
+      const damage = this.isAirKicking ? 20 : 16;
+      const knockX = this.facing * (this.isAirKicking ? 8 : 11);
+      const knockY = this.isAirKicking ? 7 : -7;
+
+      opponent.takeDamage(damage, knockX, knockY, game, 'KICK');
+      this.addSuper(16);
     }
   }
 
   fireSuper(game) {
-    if (this.hitStun > 0 || this.isDead || this.superMeter < 100) return;
+    if (this.hitStun > 0 || this.dashTimer > 0 || this.isDead || this.superMeter < 100) return;
     this.superMeter = 0;
     sfx.playSuper();
     game.addProjectile(new Projectile(this.x + this.facing * 35, this.y - 25, this.facing, this));
-    game.addFloatingText('SUPER!', this.x, this.y - 60, '#facc15');
+    game.addFloatingText('SUPER BLAST!', this.x, this.y - 60, '#facc15');
     game.triggerScreenShake(8);
   }
 
@@ -362,11 +492,11 @@ class Stickman {
   }
 
   takeDamage(amt, knockX, knockY, game, type) {
-    if (this.isDead) return;
+    if (this.isDead || this.isInvincible) return;
 
     if (this.isBlocking) {
       amt = Math.max(2, Math.round(amt * 0.25));
-      knockX *= 0.2;
+      knockX *= 0.15;
       knockY = 0;
       sfx.playBlock();
       game.addFloatingText('BLOCKED!', this.x, this.y - 40, '#38bdf8');
@@ -375,7 +505,7 @@ class Stickman {
       this.hitStun = 12;
       this.vx = knockX;
       this.vy = knockY;
-      game.triggerScreenShake(type === 'KICK' ? 6 : 3);
+      game.triggerScreenShake(type === 'COMBO' || type === 'KICK' ? 6 : 3);
       game.addFloatingText(`-${amt}`, this.x, this.y - 45, '#f43f5e');
       game.createSparks(this.x, this.y - 25, '#facc15', type === 'KICK' ? 14 : 8);
       this.addSuper(amt * 0.7);
@@ -397,61 +527,103 @@ class Stickman {
     game.onPlayerKnockedOut(this);
   }
 
-  update(platforms, arenaHeight) {
-    // Timers
+  update(platforms, arenaHeight, game) {
+    // Action Timers
     if (this.punchTimer > 0) {
       this.punchTimer--;
       if (this.punchTimer === 0) this.isPunching = false;
     }
     if (this.kickTimer > 0) {
       this.kickTimer--;
-      if (this.kickTimer === 0) this.isKicking = false;
+      if (this.kickTimer === 0) {
+        this.isKicking = false;
+        this.isAirKicking = false;
+      }
     }
     if (this.hitStun > 0) this.hitStun--;
+    if (this.dropThroughTimer > 0) this.dropThroughTimer--;
+    if (this.dashCooldown > 0) this.dashCooldown--;
+
+    // Dash state
+    if (this.dashTimer > 0) {
+      this.dashTimer--;
+      if (Math.random() < 0.4) {
+        game.ghostTrails.push(new GhostTrail(this.x, this.y, this.facing, this.color));
+      }
+      if (this.dashTimer === 0) {
+        this.isInvincible = false;
+        this.vx *= 0.3;
+      }
+    }
+
+    // Combo reset decay
+    if (this.comboResetTimer > 0) {
+      this.comboResetTimer--;
+      if (this.comboResetTimer === 0) this.comboStep = 0;
+    }
+
+    // Jump Buffering & Coyote Timer
+    if (this.jumpBufferTimer > 0) {
+      this.executeJump();
+      this.jumpBufferTimer--;
+    }
+
+    if (this.grounded) {
+      this.coyoteTimer = 6; // 6 frames grace period
+    } else if (this.coyoteTimer > 0) {
+      this.coyoteTimer--;
+    }
 
     // Physics
     this.x += this.vx;
     this.y += this.vy;
     this.vy += this.gravity;
 
-    // Platform collisions
+    // Platform Collisions (Drop-through friendly)
+    const wasGrounded = this.grounded;
     this.grounded = false;
-    platforms.forEach(plat => {
-      // Check falling onto platform top
-      if (
-        this.vy >= 0 &&
-        this.y <= plat.y &&
-        this.y + this.vy >= plat.y &&
-        this.x >= plat.x - 20 &&
-        this.x <= plat.x + plat.w + 20
-      ) {
-        this.y = plat.y;
-        this.vy = 0;
-        this.grounded = true;
-        this.jumpCount = 0;
-      }
-    });
 
-    // Ring-out / Abyss fall
+    if (this.dropThroughTimer <= 0) {
+      platforms.forEach(plat => {
+        if (
+          this.vy >= 0 &&
+          this.y <= plat.y &&
+          this.y + this.vy >= plat.y &&
+          this.x >= plat.x - 20 &&
+          this.x <= plat.x + plat.w + 20
+        ) {
+          this.y = plat.y;
+          this.vy = 0;
+          this.grounded = true;
+          this.jumpCount = 0;
+        }
+      });
+    }
+
+    // Ring-out fall
     if (this.y > arenaHeight + 60 && !this.isDead) {
-      this.die(window.gameInstance);
+      this.die(game);
     }
 
     // Animation ticker
     if (Math.abs(this.vx) > 0.5 && this.grounded) {
-      this.animTime += 0.25;
+      this.animTime += 0.28;
     } else {
       this.animTime += 0.05;
     }
   }
 
-  // Draw procedural stickman
+  // Draw Stickman with Fluid Animations
   draw(ctx) {
     ctx.save();
     ctx.translate(this.x, this.y);
 
-    // Hit stun flash
-    if (this.hitStun > 0 && Math.floor(Date.now() / 50) % 2 === 0) {
+    // Hit stun flash / Invincible Dash Alpha
+    if (this.isInvincible) {
+      ctx.globalAlpha = 0.5;
+    }
+
+    if (this.hitStun > 0 && Math.floor(Date.now() / 40) % 2 === 0) {
       ctx.strokeStyle = '#ffffff';
       ctx.fillStyle = '#ffffff';
     } else {
@@ -459,7 +631,7 @@ class Stickman {
       ctx.fillStyle = this.color;
     }
 
-    ctx.lineWidth = 4.5;
+    ctx.lineWidth = 4.8;
     ctx.lineCap = 'round';
     ctx.lineJoin = 'round';
 
@@ -470,11 +642,11 @@ class Stickman {
     if (this.isBlocking) {
       ctx.save();
       ctx.beginPath();
-      ctx.arc(dir * 10, -35, 45, -Math.PI / 2, Math.PI / 2, dir === -1);
+      ctx.arc(dir * 12, -35, 48, -Math.PI / 2, Math.PI / 2, dir === -1);
       ctx.strokeStyle = '#38bdf8';
       ctx.shadowColor = '#38bdf8';
-      ctx.shadowBlur = 15;
-      ctx.lineWidth = 3;
+      ctx.shadowBlur = 18;
+      ctx.lineWidth = 3.5;
       ctx.stroke();
       ctx.restore();
     }
@@ -511,12 +683,12 @@ class Stickman {
     ctx.lineTo(-6 + lFootX, 0);
     ctx.stroke();
 
-    // Right Leg (or Kick animation)
+    // Right Leg (or Kick)
     if (this.isKicking) {
       ctx.beginPath();
       ctx.moveTo(0, hipY);
-      ctx.lineTo(dir * 25, hipY - 6);
-      ctx.lineTo(dir * 55, hipY - 10);
+      ctx.lineTo(dir * 25, hipY - (this.isAirKicking ? 18 : 6));
+      ctx.lineTo(dir * 58, hipY - (this.isAirKicking ? 24 : 10));
       ctx.stroke();
     } else {
       ctx.beginPath();
@@ -536,21 +708,22 @@ class Stickman {
     ctx.lineTo(-dir * 18, shoulderY + 22);
     ctx.stroke();
 
-    // Front Arm (or Punch / Block)
+    // Front Arm (Punch / Block / Idle)
     if (this.isPunching) {
+      const punchReach = 44 + (this.comboStep === 3 ? 12 : 0);
       ctx.beginPath();
       ctx.moveTo(0, shoulderY);
-      ctx.lineTo(dir * 22, shoulderY);
-      ctx.lineTo(dir * 46, shoulderY);
+      ctx.lineTo(dir * 22, shoulderY - (this.comboStep === 3 ? 8 : 0));
+      ctx.lineTo(dir * punchReach, shoulderY - (this.comboStep === 3 ? 14 : 0));
       ctx.stroke();
 
-      // Punch fist trail
+      // Fist Glow
       ctx.save();
-      ctx.fillStyle = '#facc15';
-      ctx.shadowColor = '#facc15';
-      ctx.shadowBlur = 10;
+      ctx.fillStyle = this.comboStep === 3 ? '#ef4444' : '#facc15';
+      ctx.shadowColor = ctx.fillStyle;
+      ctx.shadowBlur = 12;
       ctx.beginPath();
-      ctx.arc(dir * 48, shoulderY, 6, 0, Math.PI * 2);
+      ctx.arc(dir * punchReach, shoulderY - (this.comboStep === 3 ? 14 : 0), 6.5, 0, Math.PI * 2);
       ctx.fill();
       ctx.restore();
     } else if (this.isBlocking) {
@@ -560,7 +733,6 @@ class Stickman {
       ctx.lineTo(dir * 12, shoulderY - 26);
       ctx.stroke();
     } else {
-      // Idle arm swing
       const armSwing = Math.sin(this.animTime * 2) * 6;
       ctx.beginPath();
       ctx.moveTo(0, shoulderY);
@@ -584,8 +756,8 @@ class StickmanGame {
     this.height = this.canvas.height;
 
     // Modes & States
-    this.mode = '2P'; // '2P' or 'AI'
-    this.state = 'MENU'; // 'MENU', 'ROUND_START', 'PLAYING', 'ROUND_OVER', 'MATCH_OVER'
+    this.mode = '2P';
+    this.state = 'MENU';
     this.round = 1;
     this.maxRounds = 3;
     this.roundTime = 60;
@@ -610,9 +782,11 @@ class StickmanGame {
     this.particles = [];
     this.projectiles = [];
     this.floatingTexts = [];
+    this.ghostTrails = [];
 
-    // Keyboard state
+    // Keyboard states
     this.keys = {};
+    this.justPressed = {};
 
     // DOM Elements
     this.domP1Health = document.getElementById('p1-health');
@@ -637,13 +811,24 @@ class StickmanGame {
   bindEvents() {
     window.addEventListener('keydown', (e) => {
       sfx.init();
+
+      // Prevent default page scroll on gaming keys
+      if (['Space', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.code)) {
+        e.preventDefault();
+      }
+
+      if (!this.keys[e.code]) {
+        this.justPressed[e.code] = true;
+      }
       this.keys[e.code] = true;
     });
 
     window.addEventListener('keyup', (e) => {
       this.keys[e.code] = false;
-      if (e.code === 'KeyS') this.p1.block(false);
-      if (e.code === 'ArrowDown') this.p2.block(false);
+
+      // Handle un-blocking smoothly
+      if (['KeyS', 'KeyC'].includes(e.code)) this.p1.block(false);
+      if (['ArrowDown', 'Numpad1'].includes(e.code)) this.p2.block(false);
     });
 
     // Menu buttons
@@ -689,17 +874,65 @@ class StickmanGame {
     // Touch controls for P1
     const bindTouch = (id, onDown, onUp) => {
       const el = document.getElementById(id);
+      if (!el) return;
       el.addEventListener('touchstart', (e) => { e.preventDefault(); sfx.init(); onDown(); });
       el.addEventListener('touchend', (e) => { e.preventDefault(); if (onUp) onUp(); });
     };
 
-    bindTouch('tb-left', () => this.p1.moveLeft(), () => this.p1.stopMove());
-    bindTouch('tb-right', () => this.p1.moveRight(), () => this.p1.stopMove());
-    bindTouch('tb-jump', () => this.p1.jump());
+    bindTouch('tb-left', () => this.p1.move(-1), () => this.p1.stopMove());
+    bindTouch('tb-right', () => this.p1.move(1), () => this.p1.stopMove());
+    bindTouch('tb-jump', () => this.p1.triggerJump());
     bindTouch('tb-block', () => this.p1.block(true), () => this.p1.block(false));
     bindTouch('tb-punch', () => this.p1.punch(this.p2, this));
     bindTouch('tb-kick', () => this.p1.kick(this.p2, this));
     bindTouch('tb-super', () => this.p1.fireSuper(this));
+    bindTouch('tb-dash', () => this.p1.dash(this));
+  }
+
+  // Poll standard Gamepad controllers (Xbox / PS / USB)
+  pollGamepads() {
+    if (!navigator.getGamepads) return;
+    const gamepads = navigator.getGamepads();
+
+    // Gamepad 1 -> Controls Player 1
+    if (gamepads[0]) {
+      const gp = gamepads[0];
+      const axisX = gp.axes[0];
+      const axisY = gp.axes[1];
+
+      if (axisX < -0.3 || gp.buttons[14].pressed) this.p1.move(-1);
+      else if (axisX > 0.3 || gp.buttons[15].pressed) this.p1.move(1);
+      else this.p1.stopMove();
+
+      if (axisY > 0.6 || gp.buttons[13].pressed) this.p1.dropDown();
+
+      if (gp.buttons[0].pressed) this.p1.triggerJump(); // A / Cross
+      if (gp.buttons[2].pressed) this.p1.punch(this.p2, this); // X / Square
+      if (gp.buttons[1].pressed) this.p1.kick(this.p2, this); // B / Circle
+      if (gp.buttons[3].pressed) this.p1.fireSuper(this); // Y / Triangle
+      if (gp.buttons[4].pressed || gp.buttons[5].pressed) this.p1.dash(this); // LB / RB
+      this.p1.block(gp.buttons[6].pressed || gp.buttons[7].pressed); // LT / RT
+    }
+
+    // Gamepad 2 -> Controls Player 2 (if present)
+    if (gamepads[1] && this.mode === '2P') {
+      const gp = gamepads[1];
+      const axisX = gp.axes[0];
+      const axisY = gp.axes[1];
+
+      if (axisX < -0.3 || gp.buttons[14].pressed) this.p2.move(-1);
+      else if (axisX > 0.3 || gp.buttons[15].pressed) this.p2.move(1);
+      else this.p2.stopMove();
+
+      if (axisY > 0.6 || gp.buttons[13].pressed) this.p2.dropDown();
+
+      if (gp.buttons[0].pressed) this.p2.triggerJump();
+      if (gp.buttons[2].pressed) this.p2.punch(this.p1, this);
+      if (gp.buttons[1].pressed) this.p2.kick(this.p1, this);
+      if (gp.buttons[3].pressed) this.p2.fireSuper(this);
+      if (gp.buttons[4].pressed || gp.buttons[5].pressed) this.p2.dash(this);
+      this.p2.block(gp.buttons[6].pressed || gp.buttons[7].pressed);
+    }
   }
 
   startNewMatch(mode) {
@@ -722,13 +955,13 @@ class StickmanGame {
     this.projectiles = [];
     this.particles = [];
     this.floatingTexts = [];
+    this.ghostTrails = [];
     this.slowMo = 1.0;
     this.state = 'ROUND_START';
 
     this.updateHUD();
     this.domRoundTitle.textContent = `ROUND ${this.round}`;
 
-    // Callout animation
     this.showCallout(`ROUND ${this.round}`, 1200, () => {
       this.showCallout('FIGHT!', 800, () => {
         this.state = 'PLAYING';
@@ -763,7 +996,7 @@ class StickmanGame {
   onPlayerKnockedOut(loser) {
     this.state = 'ROUND_OVER';
     if (this.timerInterval) clearInterval(this.timerInterval);
-    this.slowMo = 0.35; // Dramatic Slow Motion!
+    this.slowMo = 0.35;
 
     const winner = loser === this.p1 ? this.p2 : this.p1;
     winner.roundsWon++;
@@ -792,14 +1025,12 @@ class StickmanGame {
     this.updateHUD();
 
     if (this.p1.roundsWon >= 2 || this.p2.roundsWon >= 2) {
-      // Match Over!
       this.state = 'MATCH_OVER';
       const winnerName = this.p1.roundsWon >= 2 ? 'PLAYER 1' : (this.mode === 'AI' ? 'BOT (AI)' : 'PLAYER 2');
       document.getElementById('victory-header').textContent = `${winnerName} WINS!`;
       document.getElementById('victory-sub').textContent = `Dominating victory with ${this.p1.roundsWon >= 2 ? this.p1.roundsWon : this.p2.roundsWon} round wins.`;
       this.domGameOverOverlay.classList.remove('hidden');
     } else {
-      // Next Round
       this.round++;
       this.startRound();
     }
@@ -812,7 +1043,6 @@ class StickmanGame {
     this.domP1Super.style.width = `${this.p1.superMeter}%`;
     this.domP2Super.style.width = `${this.p2.superMeter}%`;
 
-    // Round Win Dots
     for (let i = 0; i < 2; i++) {
       if (i < this.p1.roundsWon) this.domP1Rounds[i].classList.add('won');
       else this.domP1Rounds[i].classList.remove('won');
@@ -844,101 +1074,146 @@ class StickmanGame {
     this.floatingTexts.push(new FloatingText(text, x, y, color));
   }
 
-  // Handle Player Inputs & AI Brain
+  // Handle Ultra-Responsive Keyboard & Gamepad Inputs
   handleInputs() {
     if (this.state !== 'PLAYING') return;
 
-    // --- PLAYER 1 (WASD + F / G / V) ---
-    if (this.keys['KeyA']) this.p1.moveLeft();
-    else if (this.keys['KeyD']) this.p1.moveRight();
+    this.pollGamepads();
+
+    // ==========================================
+    // --- PLAYER 1 (Left hand: WASD + F/G/V/Q) ---
+    // ==========================================
+    if (this.keys['KeyA']) this.p1.move(-1);
+    else if (this.keys['KeyD']) this.p1.move(1);
     else this.p1.stopMove();
 
-    if (this.keys['KeyW']) {
-      this.p1.jump();
-      this.keys['KeyW'] = false; // single trigger
+    // Jump (W or Space)
+    if (this.justPressed['KeyW'] || this.justPressed['Space']) {
+      this.p1.triggerJump();
     }
 
-    if (this.keys['KeyS']) this.p1.block(true);
+    // Drop Down (Hold S on upper platforms)
+    if (this.keys['KeyS']) {
+      if (this.p1.y < 420 && this.p1.grounded) {
+        this.p1.dropDown();
+      } else {
+        this.p1.block(true);
+      }
+    }
+    if (this.keys['KeyC']) this.p1.block(true);
 
-    if (this.keys['KeyF']) {
+    // Dash / Dodge (Q or E)
+    if (this.justPressed['KeyQ'] || this.justPressed['KeyE']) {
+      this.p1.dash(this);
+    }
+
+    // Punch (F or J)
+    if (this.justPressed['KeyF'] || this.justPressed['KeyJ']) {
       this.p1.punch(this.p2, this);
-      this.keys['KeyF'] = false;
     }
 
-    if (this.keys['KeyG']) {
+    // Kick (G or K)
+    if (this.justPressed['KeyG'] || this.justPressed['KeyK']) {
       this.p1.kick(this.p2, this);
-      this.keys['KeyG'] = false;
     }
 
-    if (this.keys['KeyV']) {
+    // Super (V or R)
+    if (this.justPressed['KeyV'] || this.justPressed['KeyR']) {
       this.p1.fireSuper(this);
-      this.keys['KeyV'] = false;
     }
 
-    // --- PLAYER 2 (Arrows + L / K / M) OR AI BOT ---
+    // ==========================================
+    // --- PLAYER 2 (Arrows + L/K/M/I or NumPad) -
+    // ==========================================
     if (this.mode === '2P') {
-      if (this.keys['ArrowLeft']) this.p2.moveLeft();
-      else if (this.keys['ArrowRight']) this.p2.moveRight();
+      if (this.keys['ArrowLeft'] || this.keys['Numpad4']) this.p2.move(-1);
+      else if (this.keys['ArrowRight'] || this.keys['Numpad6']) this.p2.move(1);
       else this.p2.stopMove();
 
-      if (this.keys['ArrowUp']) {
-        this.p2.jump();
-        this.keys['ArrowUp'] = false;
+      // Jump (Up or Numpad 8/0)
+      if (this.justPressed['ArrowUp'] || this.justPressed['Numpad8'] || this.justPressed['Numpad0']) {
+        this.p2.triggerJump();
       }
 
-      if (this.keys['ArrowDown']) this.p2.block(true);
+      // Drop down or Block (Down or Numpad 2/1)
+      if (this.keys['ArrowDown'] || this.keys['Numpad2']) {
+        if (this.p2.y < 420 && this.p2.grounded) {
+          this.p2.dropDown();
+        } else {
+          this.p2.block(true);
+        }
+      }
+      if (this.keys['Numpad1']) this.p2.block(true);
 
-      if (this.keys['KeyL']) {
+      // Dash (I or Numpad 7)
+      if (this.justPressed['KeyI'] || this.justPressed['Numpad7']) {
+        this.p2.dash(this);
+      }
+
+      // Punch (L or Numpad 4/5)
+      if (this.justPressed['KeyL']) {
         this.p2.punch(this.p1, this);
-        this.keys['KeyL'] = false;
       }
 
-      if (this.keys['KeyK']) {
+      // Kick (K or Numpad 5/6)
+      if (this.justPressed['KeyK'] || this.justPressed['Numpad5']) {
         this.p2.kick(this.p1, this);
-        this.keys['KeyK'] = false;
       }
 
-      if (this.keys['KeyM']) {
+      // Super (M or NumpadEnter)
+      if (this.justPressed['KeyM'] || this.justPressed['NumpadEnter']) {
         this.p2.fireSuper(this);
-        this.keys['KeyM'] = false;
       }
     } else {
       this.handleAIBot();
     }
+
+    // Clear just-pressed buffer at end of frame
+    this.justPressed = {};
   }
 
-  // Intelligent AI Competitor
+  // Tactical AI Competitor (Uses Dash, Drop-Down & Combos)
   handleAIBot() {
     const dist = Math.abs(this.p2.x - this.p1.x);
     const vertDist = Math.abs(this.p2.y - this.p1.y);
 
-    // Look at player
     this.p2.facing = this.p1.x > this.p2.x ? 1 : -1;
 
-    // Avoid falling off main platform edge
+    // Edge recovery
     if (this.p2.x < 210 && this.p2.grounded) {
-      this.p2.moveRight();
-      this.p2.jump();
+      this.p2.move(1);
+      this.p2.triggerJump();
       return;
     }
     if (this.p2.x > 790 && this.p2.grounded) {
-      this.p2.moveLeft();
-      this.p2.jump();
+      this.p2.move(-1);
+      this.p2.triggerJump();
       return;
     }
 
-    // Fire Super if available
+    // Drop down if player is on the lower platform
+    if (this.p2.y < 400 && this.p1.y > 440 && Math.random() < 0.03) {
+      this.p2.dropDown();
+    }
+
+    // Fire Super if meter is full
     if (this.p2.superMeter >= 100 && Math.random() < 0.05) {
       this.p2.fireSuper(this);
       return;
     }
 
-    // Combat Range Tactics
-    if (dist < 60 && vertDist < 40) {
+    // Tactical Dash to close distance or escape
+    if (dist > 180 && dist < 320 && Math.random() < 0.03) {
+      this.p2.dash(this);
+    }
+
+    // Combat Range
+    if (dist < 60 && vertDist < 45) {
       this.p2.stopMove();
-      // Block incoming punches/kicks
+
+      // Block against incoming strikes
       if (this.p1.isPunching || this.p1.isKicking) {
-        if (Math.random() < 0.6) {
+        if (Math.random() < 0.65) {
           this.p2.block(true);
           return;
         }
@@ -948,20 +1223,18 @@ class StickmanGame {
 
       // Attack
       const actionRoll = Math.random();
-      if (actionRoll < 0.08) {
+      if (actionRoll < 0.1) {
         this.p2.punch(this.p1, this);
-      } else if (actionRoll < 0.14) {
+      } else if (actionRoll < 0.16) {
         this.p2.kick(this.p1, this);
       }
     } else {
-      // Approach Player
       this.p2.block(false);
-      if (this.p1.x > this.p2.x) this.p2.moveRight();
-      else this.p2.moveLeft();
+      if (this.p1.x > this.p2.x) this.p2.move(1);
+      else this.p2.move(-1);
 
-      // Jump over obstacles / up to higher platform
       if (this.p1.y < this.p2.y - 40 && Math.random() < 0.04) {
-        this.p2.jump();
+        this.p2.triggerJump();
       }
     }
   }
@@ -971,7 +1244,6 @@ class StickmanGame {
       const p = this.projectiles[i];
       p.update(this);
 
-      // Collision with players
       const target = p.owner === this.p1 ? this.p2 : this.p1;
       const dist = Math.abs(p.x - target.x);
       const vertDist = Math.abs(p.y - (target.y - 30));
@@ -991,12 +1263,15 @@ class StickmanGame {
   update() {
     this.handleInputs();
 
-    // Update Players
-    this.p1.update(this.platforms, this.height);
-    this.p2.update(this.platforms, this.height);
+    this.p1.update(this.platforms, this.height, this);
+    this.p2.update(this.platforms, this.height, this);
 
-    // Update Entities
     this.updateProjectiles();
+
+    for (let i = this.ghostTrails.length - 1; i >= 0; i--) {
+      this.ghostTrails[i].update();
+      if (this.ghostTrails[i].life <= 0) this.ghostTrails.splice(i, 1);
+    }
 
     for (let i = this.particles.length - 1; i >= 0; i--) {
       this.particles[i].update();
@@ -1016,27 +1291,25 @@ class StickmanGame {
   draw() {
     this.ctx.save();
 
-    // Screen Shake effect
     if (this.screenShake > 0) {
       const shakeX = (Math.random() - 0.5) * this.screenShake * 3;
       const shakeY = (Math.random() - 0.5) * this.screenShake * 3;
       this.ctx.translate(shakeX, shakeY);
     }
 
-    // Clear Canvas
     this.ctx.clearRect(0, 0, this.width, this.height);
 
-    // Arena Background Grid / Nebula Glow
     this.drawArenaBackdrop();
-
-    // Draw Platforms
     this.drawPlatforms();
 
-    // Draw Players
+    // Ghost trails under characters
+    this.ghostTrails.forEach(gt => gt.draw(this.ctx));
+
+    // Characters
     this.p1.draw(this.ctx);
     this.p2.draw(this.ctx);
 
-    // Draw Projectiles & Particles
+    // Projectiles & Particles
     this.projectiles.forEach(p => p.draw(this.ctx));
     this.particles.forEach(pt => pt.draw(this.ctx));
     this.floatingTexts.forEach(ft => ft.draw(this.ctx));
@@ -1045,7 +1318,6 @@ class StickmanGame {
   }
 
   drawArenaBackdrop() {
-    // Star dots
     this.ctx.fillStyle = 'rgba(255, 255, 255, 0.15)';
     for (let i = 0; i < 30; i++) {
       const sx = (i * 37) % this.width;
@@ -1053,7 +1325,6 @@ class StickmanGame {
       this.ctx.fillRect(sx, sy, 1.5, 1.5);
     }
 
-    // Grid Floor glow below arena
     this.ctx.strokeStyle = 'rgba(99, 102, 241, 0.08)';
     this.ctx.lineWidth = 1;
     for (let x = 0; x < this.width; x += 40) {
@@ -1066,19 +1337,15 @@ class StickmanGame {
 
   drawPlatforms() {
     this.platforms.forEach(plat => {
-      // Glow boundary
       this.ctx.shadowColor = '#6366f1';
       this.ctx.shadowBlur = 12;
 
-      // Platform Core
       this.ctx.fillStyle = '#1e2238';
       this.ctx.fillRect(plat.x, plat.y, plat.w, plat.h);
 
-      // Neon Top Edge
       this.ctx.fillStyle = '#818cf8';
       this.ctx.fillRect(plat.x, plat.y, plat.w, 4);
 
-      // Bevel trim
       this.ctx.shadowBlur = 0;
       this.ctx.fillStyle = 'rgba(255, 255, 255, 0.08)';
       this.ctx.fillRect(plat.x + 2, plat.y + 4, plat.w - 4, plat.h - 6);
@@ -1086,7 +1353,6 @@ class StickmanGame {
   }
 
   loop() {
-    // Frame step with slow motion multiplier
     this.update();
     this.draw();
 
@@ -1094,8 +1360,6 @@ class StickmanGame {
   }
 }
 
-// Start Game on load
 window.addEventListener('DOMContentLoaded', () => {
   new StickmanGame();
 });
-

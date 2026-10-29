@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Stickman Arena: 1v1 Battle</title>
+  <title>Stickman Clash: 1v1 Arena Fighter</title>
   <link rel="stylesheet" href="style.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -62,18 +62,28 @@
       <div id="callout-overlay" class="hidden">
         <h1 id="callout-text">FIGHT!</h1>
       </div>
+
+      <!-- Quick Controls Reminder Strip (Bottom of Arena) -->
+      <div id="quick-controls-hud">
+        <div class="quick-hud-p1">
+          <span>🔵 <strong>P1</strong>: <kbd>A</kbd><kbd>D</kbd> Move | <kbd>W</kbd>/<kbd>Space</kbd> Jump | <kbd>Q</kbd> Dash | <kbd>F</kbd> Punch | <kbd>G</kbd> Kick | <kbd>S</kbd> Block/Drop</span>
+        </div>
+        <div class="quick-hud-p2">
+          <span>🔴 <strong>P2</strong>: <kbd>◀</kbd><kbd>▶</kbd> Move | <kbd>▲</kbd> Jump | <kbd>I</kbd> Dash | <kbd>L</kbd> Punch | <kbd>K</kbd> Kick | <kbd>▼</kbd> Block/Drop</span>
+        </div>
+      </div>
     </main>
 
     <!-- Start / Pause / Win Modals -->
     <div id="menu-overlay" class="overlay active">
       <div class="menu-card">
         <h1 class="game-logo">⚡ STICKMAN <span>CLASH</span> ⚡</h1>
-        <p class="tagline">Intense 1v1 Competitive Stick Fighter</p>
+        <p class="tagline">Ultra-Fluid 1v1 Competitive Stick Fighter</p>
 
         <div class="menu-modes">
-          <button class="btn btn-primary" id="btn-mode-2p">👥 2 Players (Local Keyboard)</button>
-          <button class="btn btn-secondary" id="btn-mode-ai">🤖 1 Player vs AI Bot</button>
-          <button class="btn btn-outline" id="btn-controls">🎮 Controls & Guide</button>
+          <button class="btn btn-primary" id="btn-mode-2p">👥 2 Players (Local Keyboard / Gamepad)</button>
+          <button class="btn btn-secondary" id="btn-mode-ai">🤖 1 Player vs Smart AI Bot</button>
+          <button class="btn btn-outline" id="btn-controls">🎮 Controls & Move List</button>
         </div>
 
         <div class="settings-strip">
@@ -81,11 +91,9 @@
             <input type="checkbox" id="toggle-sfx" checked> Sound FX
           </label>
           <label>
-            <input type="checkbox" id="toggle-particles" checked> Hit Sparks
-          </label>
-          <label>
             <input type="checkbox" id="toggle-touch"> Touch Controls
           </label>
+          <span class="gamepad-badge">🎮 Plug-and-Play Gamepads Supported</span>
         </div>
       </div>
     </div>
@@ -93,32 +101,39 @@
     <!-- Controls Guide Modal -->
     <div id="controls-overlay" class="overlay hidden">
       <div class="menu-card controls-card">
-        <h2>HOW TO PLAY</h2>
+        <h2>🎮 PRO CONTROLS & MOVE LIST</h2>
         <div class="controls-grid">
           <div class="control-col p1-box">
-            <h3>🔵 PLAYER 1</h3>
+            <h3>🔵 PLAYER 1 (Keyboard / Gamepad 1)</h3>
             <ul>
-              <li><kbd>W</kbd> Jump (Double Jump)</li>
-              <li><kbd>A</kbd> / <kbd>D</kbd> Move Left / Right</li>
-              <li><kbd>S</kbd> Block (Reduce 75% Dmg)</li>
-              <li><kbd>F</kbd> Punch (Quick)</li>
-              <li><kbd>G</kbd> Kick (Heavy Knockback)</li>
-              <li><kbd>V</kbd> 🔥 Super Blast (Requires Full Bar)</li>
+              <li><kbd>A</kbd> / <kbd>D</kbd> Run Left / Right</li>
+              <li><kbd>W</kbd> or <kbd>Space</kbd> Jump (Double Jump!)</li>
+              <li><kbd>S</kbd> Block (or Hold to Drop through upper platforms)</li>
+              <li><kbd>Q</kbd> or <kbd>E</kbd> <strong>Dash / Dodge Roll</strong> (Invincible frames!)</li>
+              <li><kbd>F</kbd> <strong>3-Hit Punch Combo</strong> (Tap rapidly)</li>
+              <li><kbd>G</kbd> Roundhouse Kick (In air = <strong>Dive Kick</strong>)</li>
+              <li><kbd>V</kbd> or <kbd>R</kbd> 🔥 <strong>Super Blast</strong> (Requires 100% Bar)</li>
             </ul>
           </div>
           <div class="control-col p2-box">
-            <h3>🔴 PLAYER 2 (or AI)</h3>
+            <h3>🔴 PLAYER 2 (Keyboard / Gamepad 2)</h3>
             <ul>
-              <li><kbd>▲</kbd> Jump (Double Jump)</li>
-              <li><kbd>◀</kbd> / <kbd>▶</kbd> Move Left / Right</li>
-              <li><kbd>▼</kbd> Block (Reduce 75% Dmg)</li>
-              <li><kbd>L</kbd> Punch (Quick)</li>
-              <li><kbd>K</kbd> Kick (Heavy Knockback)</li>
-              <li><kbd>M</kbd> 🔥 Super Blast (Requires Full Bar)</li>
+              <li><kbd>◀</kbd> / <kbd>▶</kbd> Run Left / Right (or Numpad 4/6)</li>
+              <li><kbd>▲</kbd> Jump (Double Jump! or Numpad 8/0)</li>
+              <li><kbd>▼</kbd> Block (or Hold to Drop through upper platforms)</li>
+              <li><kbd>I</kbd> or <kbd>Numpad 7</kbd> <strong>Dash / Dodge Roll</strong></li>
+              <li><kbd>L</kbd> <strong>3-Hit Punch Combo</strong> (Tap rapidly)</li>
+              <li><kbd>K</kbd> Roundhouse Kick (In air = <strong>Dive Kick</strong>)</li>
+              <li><kbd>M</kbd> or <kbd>Enter</kbd> 🔥 <strong>Super Blast</strong></li>
             </ul>
           </div>
         </div>
-        <p class="guide-tip">💡 <strong>Pro Tip:</strong> Deplete your opponent's HP or knock them completely off the stage platforms to win!</p>
+        <p class="guide-tip">
+          💡 <strong>Pro Tips:</strong> 
+          Use <strong>Dash (<kbd>Q</kbd> / <kbd>I</kbd>)</strong> to phase through attacks! 
+          Press attack in the air for aerial spikes. 
+          Hold Down on upper platforms to drop through them!
+        </p>
         <button class="btn btn-primary" id="btn-close-controls">BACK TO MENU</button>
       </div>
     </div>
@@ -140,10 +155,11 @@
       <div class="touch-group touch-left">
         <button class="touch-btn" id="tb-left">◀</button>
         <button class="touch-btn" id="tb-right">▶</button>
-        <button class="touch-btn" id="tb-jump">▲</button>
-        <button class="touch-btn" id="tb-block">🛡️</button>
+        <button class="touch-btn" id="tb-jump">▲ JUMP</button>
+        <button class="touch-btn" id="tb-block">🛡️ BLOCK</button>
       </div>
       <div class="touch-group touch-right">
+        <button class="touch-btn touch-dash" id="tb-dash">💨 DASH</button>
         <button class="touch-btn touch-action" id="tb-punch">👊 PUNCH</button>
         <button class="touch-btn touch-action" id="tb-kick">🦵 KICK</button>
         <button class="touch-btn touch-super" id="tb-super">⚡ SUPER</button>
@@ -154,4 +170,3 @@
   <script src="game.js"></script>
 </body>
 </html>
-
