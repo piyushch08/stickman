@@ -378,7 +378,7 @@ class Stickman {
     this.jumpBufferTimer = 8;
   }
 
-  executeJump() {
+  executeJump(game) {
     if (this.hitStun > 0 || this.dashTimer > 0 || this.isBlocking || this.isDead) return;
 
     if (this.grounded || this.coyoteTimer > 0) {
@@ -388,11 +388,13 @@ class Stickman {
       this.jumpCount = 1;
       this.jumpBufferTimer = 0;
       sfx.playJump();
+      if (game) game.createSparks(this.x, this.y, '#EFEFEF', 5);
     } else if (this.jumpCount < this.maxJumps) {
       this.vy = this.jumpForce * 0.95;
       this.jumpCount++;
       this.jumpBufferTimer = 0;
       sfx.playJump();
+      if (game) game.createSparks(this.x, this.y, this.color, 8);
     }
   }
 
@@ -449,8 +451,10 @@ class Stickman {
       this.addSuper(isFinisher ? 18 : 10);
 
       if (isFinisher) {
-        game.addFloatingText('3-HIT COMBO!', this.x, this.y - 70, '#facc15');
+        game.addFloatingText('💥 3-HIT FINISHER!', this.x, this.y - 70, '#F9D601');
         Haptics.trigger(30);
+      } else if (this.comboStep === 2) {
+        game.addFloatingText('COMBO x2!', this.x, this.y - 60, this.color);
       }
     }
   }
@@ -466,6 +470,7 @@ class Stickman {
       this.vy = 8;
       this.vx = this.facing * 7;
       sfx.playKick(true);
+      game.addFloatingText('⚡ DIVE KICK!', this.x, this.y - 60, '#F9D601');
     } else {
       sfx.playKick(false);
     }
@@ -573,7 +578,7 @@ class Stickman {
     }
 
     if (this.jumpBufferTimer > 0) {
-      this.executeJump();
+      this.executeJump(game);
       this.jumpBufferTimer--;
     }
 
@@ -617,7 +622,24 @@ class Stickman {
     }
   }
 
-  draw(ctx) {
+  draw(ctx, platforms) {
+    // Soft Floor Shadow projected on platform beneath feet
+    if (platforms) {
+      platforms.forEach(plat => {
+        if (this.x >= plat.x - 15 && this.x <= plat.x + plat.w + 15 && plat.y >= this.y && plat.y - this.y < 120) {
+          const shadowDist = plat.y - this.y;
+          const shadowAlpha = Math.max(0.08, 0.42 - (shadowDist / 120) * 0.34);
+          const shadowWidth = Math.max(14, 28 - (shadowDist / 120) * 12);
+          ctx.save();
+          ctx.fillStyle = `rgba(0, 0, 0, ${shadowAlpha})`;
+          ctx.beginPath();
+          ctx.ellipse(this.x, plat.y + 1, shadowWidth, 5, 0, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.restore();
+        }
+      });
+    }
+
     ctx.save();
     ctx.translate(this.x, this.y);
 
@@ -654,6 +676,18 @@ class Stickman {
 
     // Head
     const headY = -68 + bounce;
+
+    // Martial Arts Flowing Headband Ribbon
+    const ribbonDrift = -dir * 18 - (this.vx * 2.5);
+    const ribbonWave = Math.sin(this.animTime * 3) * 5;
+    ctx.beginPath();
+    ctx.moveTo(-dir * 8, headY - 1);
+    ctx.quadraticCurveTo(ribbonDrift * 0.5, headY - 4 + ribbonWave, ribbonDrift, headY + 3 + ribbonWave * 1.5);
+    ctx.lineWidth = 3.2;
+    ctx.strokeStyle = this.isP1 ? '#F9D601' : '#3670FF';
+    ctx.stroke();
+    ctx.lineWidth = 4.8;
+
     ctx.beginPath();
     ctx.arc(0, headY, 11, 0, Math.PI * 2);
     ctx.fill();
@@ -857,6 +891,14 @@ class StickmanGame {
   bindEvents() {
     window.addEventListener('keydown', (e) => {
       sfx.init();
+
+      // Quick Rematch via Space or Enter on Victory Screen
+      if (this.state === 'MATCH_OVER' && (e.code === 'Space' || e.code === 'Enter')) {
+        e.preventDefault();
+        this.startNewMatch(this.mode);
+        return;
+      }
+
       if (['Space', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.code)) {
         e.preventDefault();
       }
@@ -1393,8 +1435,8 @@ class StickmanGame {
     this.drawPlatforms();
 
     this.ghostTrails.forEach(gt => gt.draw(this.ctx));
-    this.p1.draw(this.ctx);
-    this.p2.draw(this.ctx);
+    this.p1.draw(this.ctx, this.platforms);
+    this.p2.draw(this.ctx, this.platforms);
     this.projectiles.forEach(p => p.draw(this.ctx));
     this.particles.forEach(pt => pt.draw(this.ctx));
     this.floatingTexts.forEach(ft => ft.draw(this.ctx));
