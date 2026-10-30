@@ -219,7 +219,7 @@ class GhostTrail {
 }
 
 class FloatingText {
-  constructor(text, x, y, color = '#ffffff') {
+  constructor(text, x, y, color = '#EFEFEF') {
     this.text = text;
     this.x = x;
     this.y = y;
@@ -510,16 +510,16 @@ class Stickman {
       knockY = 0;
       sfx.playBlock();
       Haptics.trigger(10);
-      game.addFloatingText('BLOCKED!', this.x, this.y - 40, '#38bdf8');
-      game.createSparks(this.x, this.y - 30, '#38bdf8', 6);
+      game.addFloatingText('BLOCKED!', this.x, this.y - 40, this.color);
+      game.createSparks(this.x, this.y - 30, this.color, 6);
     } else {
       this.hitStun = 12;
       this.vx = knockX;
       this.vy = knockY;
       Haptics.trigger(type === 'KICK' || type === 'COMBO' ? 40 : 25);
       game.triggerScreenShake(type === 'COMBO' || type === 'KICK' ? 6 : 3);
-      game.addFloatingText(`-${amt}`, this.x, this.y - 45, '#f43f5e');
-      game.createSparks(this.x, this.y - 25, '#facc15', type === 'KICK' ? 14 : 8);
+      game.addFloatingText(`-${amt}`, this.x, this.y - 45, '#F9D601');
+      game.createSparks(this.x, this.y - 25, '#F9D601', type === 'KICK' ? 14 : 8);
       this.addSuper(amt * 0.7);
     }
 
@@ -626,8 +626,8 @@ class Stickman {
     }
 
     if (this.hitStun > 0 && Math.floor(Date.now() / 40) % 2 === 0) {
-      ctx.strokeStyle = '#ffffff';
-      ctx.fillStyle = '#ffffff';
+      ctx.strokeStyle = '#EFEFEF';
+      ctx.fillStyle = '#EFEFEF';
     } else {
       ctx.strokeStyle = this.color;
       ctx.fillStyle = this.color;
@@ -644,8 +644,8 @@ class Stickman {
       ctx.save();
       ctx.beginPath();
       ctx.arc(dir * 12, -35, 48, -Math.PI / 2, Math.PI / 2, dir === -1);
-      ctx.strokeStyle = '#38bdf8';
-      ctx.shadowColor = '#38bdf8';
+      ctx.strokeStyle = this.color;
+      ctx.shadowColor = this.color;
       ctx.shadowBlur = 18;
       ctx.lineWidth = 3.5;
       ctx.stroke();
@@ -659,7 +659,7 @@ class Stickman {
     ctx.fill();
 
     // Eye visor
-    ctx.fillStyle = '#ffffff';
+    ctx.fillStyle = '#EFEFEF';
     ctx.beginPath();
     ctx.rect(dir * 2, headY - 3, dir * 7, 3);
     ctx.fill();
@@ -715,7 +715,7 @@ class Stickman {
       ctx.stroke();
 
       ctx.save();
-      ctx.fillStyle = this.comboStep === 3 ? '#ef4444' : '#facc15';
+      ctx.fillStyle = this.comboStep === 3 ? '#F9D601' : (this.isP1 ? '#3670FF' : '#F9D601');
       ctx.shadowColor = ctx.fillStyle;
       ctx.shadowBlur = 12;
       ctx.beginPath();
@@ -770,9 +770,9 @@ class StickmanGame {
       { x: 660, y: 350, w: 220, h: 18, name: 'Right Platform' }
     ];
 
-    // Players
-    this.p1 = new Stickman(260, 480, '#38bdf8', true);
-    this.p2 = new Stickman(740, 480, '#f43f5e', false);
+    // Players (P1: Ultramarine Blue #3670FF, P2: Golden #F9D601)
+    this.p1 = new Stickman(260, 480, '#3670FF', true);
+    this.p2 = new Stickman(740, 480, '#F9D601', false);
 
     // Entity lists
     this.particles = [];
@@ -1403,14 +1403,14 @@ class StickmanGame {
   }
 
   drawArenaBackdrop() {
-    this.ctx.fillStyle = 'rgba(255, 255, 255, 0.15)';
+    this.ctx.fillStyle = 'rgba(239, 239, 239, 0.25)';
     for (let i = 0; i < 30; i++) {
       const sx = (i * 37) % this.width;
       const sy = (i * 29) % (this.height - 100);
       this.ctx.fillRect(sx, sy, 1.5, 1.5);
     }
 
-    this.ctx.strokeStyle = 'rgba(99, 102, 241, 0.08)';
+    this.ctx.strokeStyle = 'rgba(54, 112, 255, 0.12)';
     this.ctx.lineWidth = 1;
     for (let x = 0; x < this.width; x += 40) {
       this.ctx.beginPath();
@@ -1422,17 +1422,20 @@ class StickmanGame {
 
   drawPlatforms() {
     this.platforms.forEach(plat => {
-      this.ctx.shadowColor = '#6366f1';
-      this.ctx.shadowBlur = 12;
+      this.ctx.shadowColor = '#3670FF';
+      this.ctx.shadowBlur = 14;
 
-      this.ctx.fillStyle = '#1e2238';
+      // Platform Core (Chinese Black #171717)
+      this.ctx.fillStyle = '#171717';
       this.ctx.fillRect(plat.x, plat.y, plat.w, plat.h);
 
-      this.ctx.fillStyle = '#818cf8';
+      // Ultramarine Blue Top Edge
+      this.ctx.fillStyle = '#3670FF';
       this.ctx.fillRect(plat.x, plat.y, plat.w, 4);
 
+      // Bright Gray Bevel Trim
       this.ctx.shadowBlur = 0;
-      this.ctx.fillStyle = 'rgba(255, 255, 255, 0.08)';
+      this.ctx.fillStyle = 'rgba(239, 239, 239, 0.15)';
       this.ctx.fillRect(plat.x + 2, plat.y + 4, plat.w - 4, plat.h - 6);
     });
   }
