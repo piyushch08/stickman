@@ -1110,7 +1110,11 @@ class StickmanGame {
     this.p1.roundsWon = 0;
     this.p2.roundsWon = 0;
 
-    document.getElementById('p2-display-name').textContent = mode === 'AI' ? 'BOT (AI)' : 'PLAYER 2';
+    const p1NameEl = document.getElementById('p1-display-name');
+    if (p1NameEl) p1NameEl.textContent = 'COBALT STRIKER';
+
+    const p2NameEl = document.getElementById('p2-display-name');
+    if (p2NameEl) p2NameEl.textContent = mode === 'AI' ? 'SOLARIS (AI)' : 'SOLARIS';
 
     // Toggle touch UI based on selected mode
     const isTouchEnabled = document.getElementById('toggle-touch').checked;
@@ -1141,7 +1145,7 @@ class StickmanGame {
     this.state = 'ROUND_START';
 
     this.updateHUD();
-    this.domRoundTitle.textContent = `ROUND ${this.round}`;
+    this.domRoundTitle.textContent = `ROUND ${this.round} • BEST OF 3`;
 
     this.showCallout(`ROUND ${this.round}`, 1200, () => {
       this.showCallout('FIGHT!', 800, () => {
@@ -1207,9 +1211,19 @@ class StickmanGame {
 
     if (this.p1.roundsWon >= 2 || this.p2.roundsWon >= 2) {
       this.state = 'MATCH_OVER';
-      const winnerName = this.p1.roundsWon >= 2 ? 'PLAYER 1' : (this.mode === 'AI' ? 'BOT (AI)' : 'PLAYER 2');
+      const isP1 = this.p1.roundsWon >= 2;
+      const winnerName = isP1 ? 'COBALT STRIKER' : (this.mode === 'AI' ? 'SOLARIS (AI)' : 'SOLARIS');
       document.getElementById('victory-header').textContent = `${winnerName} WINS!`;
-      document.getElementById('victory-sub').textContent = `Dominating victory with ${this.p1.roundsWon >= 2 ? this.p1.roundsWon : this.p2.roundsWon} round wins.`;
+      document.getElementById('victory-sub').textContent = isP1
+        ? `Tournament champion with a dominant ${this.p1.roundsWon} - ${this.p2.roundsWon} victory!`
+        : `Solaris claims the championship with a ${this.p2.roundsWon} - ${this.p1.roundsWon} score!`;
+
+      const statScore = document.getElementById('stat-score');
+      if (statScore) statScore.textContent = `${this.p1.roundsWon} - ${this.p2.roundsWon}`;
+
+      const statRounds = document.getElementById('stat-rounds');
+      if (statRounds) statRounds.textContent = `${this.p1.roundsWon + this.p2.roundsWon}`;
+
       this.domGameOverOverlay.classList.remove('hidden');
     } else {
       this.round++;
@@ -1221,8 +1235,27 @@ class StickmanGame {
     this.domP1Health.style.width = `${(this.p1.health / this.p1.maxHealth) * 100}%`;
     this.domP2Health.style.width = `${(this.p2.health / this.p2.maxHealth) * 100}%`;
 
+    // Numeric HP readout
+    const p1HpLabel = document.getElementById('p1-hp-text');
+    if (p1HpLabel) p1HpLabel.textContent = `${Math.max(0, Math.ceil(this.p1.health))} HP`;
+    const p2HpLabel = document.getElementById('p2-hp-text');
+    if (p2HpLabel) p2HpLabel.textContent = `${Math.max(0, Math.ceil(this.p2.health))} HP`;
+
+    // Super bars
     this.domP1Super.style.width = `${this.p1.superMeter}%`;
     this.domP2Super.style.width = `${this.p2.superMeter}%`;
+
+    // Super status subtext
+    const p1SuperLabel = document.getElementById('p1-super-text');
+    if (p1SuperLabel) {
+      p1SuperLabel.textContent = this.p1.superMeter >= 100 ? '⚡ SUPER READY!' : `SUPER: ${Math.floor(this.p1.superMeter)}%`;
+      p1SuperLabel.style.color = this.p1.superMeter >= 100 ? '#F9D601' : '';
+    }
+    const p2SuperLabel = document.getElementById('p2-super-text');
+    if (p2SuperLabel) {
+      p2SuperLabel.textContent = this.p2.superMeter >= 100 ? '⚡ SUPER READY!' : `SUPER: ${Math.floor(this.p2.superMeter)}%`;
+      p2SuperLabel.style.color = this.p2.superMeter >= 100 ? '#F9D601' : '';
+    }
 
     // Glow on Super Button when meter is 100%
     if (this.p1.superMeter >= 100) {

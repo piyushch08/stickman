@@ -1,34 +1,53 @@
 ================================================================================
-STICKMAN CLASH: 1v1 ARENA FIGHTER (PALETTE REFRESH EDITION)
+STICKMAN CLASH: 1v1 HYPER ARENA FIGHTER
+High-Performance Esports Arcade Edition
 ================================================================================
 
-COLOR PALETTE MAPPING:
+OFFICIAL COLOR PALETTE:
 - 🌟 GOLDEN (#F9D601):
-    Player 2 Fighter, Match Timer, Super Blast Charge, High-Knockback Sparks,
-    Victory Headlines & Ready Pulses.
+    Fighter P2 (Solaris), Match Digital Clock, Ready Super Pulses, Combo Finishers,
+    Victory Headlines & Trophies.
 - ⚡ ULTRAMARINE BLUE (#3670FF):
-    Player 1 Fighter, Primary Action Buttons, Energy Shields, Platform Glows &
-    Health Gradients.
+    Fighter P1 (Cobalt Striker), Primary CTA Cards & Buttons, Energy Shield Auras,
+    Platform Neon Trim, Health Fill Gradients.
 - ⚪ BRIGHT GRAY (#EFEFEF):
-    Crisp Typography, Eye Visors, Platform Bevel Trim, Starfields & KBD Tags.
+    Plus Jakarta Sans Microcopy, Metallic Bevels, Dynamic Starfields, Keycaps.
 - ⚫ CHINESE BLACK (#171717):
-    Deep Arena Canvas, Card Panels, HUD Dials, Floating Platforms & Wrapper Background.
+    Glassmorphism Cards, Dark Platform Core, Arena Base & Wrapper Frame.
 
-HOW TO RUN:
-Open 'index.html' in your browser (Double-click or use Live Server in VS Code).
-Works on all devices: Mobile Phones (iOS / Android), Tablets / iPads, and Desktops.
+NEW UI & VISUAL IMPROVEMENTS:
+1. 🥊 Flowing Martial Arts Scarf: Both fighters now sport dynamic cloth ribbons
+   that flutter and react realistically to movement and velocity.
+2. 👥 Soft Floor Cast Shadows: Dynamic projected shadows beneath each fighter's
+   feet onto platforms for enhanced physical depth.
+3. 📊 Esports HUD & Real-Time Readouts:
+   - Live numeric HP readouts (e.g. 100 HP).
+   - Super meter charge percentage and "⚡ SUPER READY!" indicator.
+   - Diamond crystal round counters that glow upon winning.
+   - Brushed metal digital clock frame with format status.
+4. 🎮 Interactive Mode Cards:
+   - Modern hero cards with icons, subtitle descriptions, and status badges.
+5. 🎛️ Cyberpunk Slider Switches:
+   - Custom toggle controls for Audio, Haptic Rumble, and Mobile Touch UI.
+6. 🥋 Combat Dojo Modal:
+   - Detailed move list with realistic 3D keycaps and pro combat tips.
+7. 🏆 Victory Stats Recap:
+   - Match results card with final scores, rounds fought, and fast [Space/Enter] rematch.
 
 CONTROLS:
 --------------------------------------------------------------------------------
-ACTION          | PLAYER 1 (Ultramarine Blue) | PLAYER 2 (Golden / AI)
+ACTION          | PLAYER 1 (Cobalt Striker)    | PLAYER 2 (Solaris / AI)
 --------------------------------------------------------------------------------
-Move Left/Right | [A] / [D]                   | [Left Arrow] / [Right Arrow]
-Jump (Double)   | [W] or [Space]              | [Up Arrow] (or Numpad 8/0)
-Dash / Dodge    | [Q] or [E] (Invincible!)    | [I] or [Numpad 7]
-Drop Platform   | Hold [S] on upper stage     | Hold [Down Arrow] on upper stage
-Block (Shield)  | [S] or [C] (Ground only)    | [Down Arrow] or [Numpad 1]
-Punch (Combo)   | [F] or [J]                  | [L]
-Kick (Dive Kick)| [G] or [K]                  | [K] or [Numpad 5]
-Super Blast     | [V] or [R] (Full Meter)     | [M] or [Numpad Enter]
+Move Left/Right | [A] / [D]                    | [Left Arrow] / [Right Arrow]
+Jump (Double)   | [W] or [Space]               | [Up Arrow] (or Numpad 8/0)
+Dash / Dodge    | [Q] or [E] (Invincible Roll) | [I] or [Numpad 7]
+Drop Platform   | Hold [S] on upper stage      | Hold [Down Arrow] on upper stage
+Block (Shield)  | [S] or [C] (Absorbs 75% dmg) | [Down Arrow] or [Numpad 1]
+Punch (Combo)   | [F] or [J] (3-Hit Combo)     | [L]
+Kick (Dive Kick)| [G] or [K] (Air = Spike)     | [K] or [Numpad 5]
+Super Blast     | [V] or [R] (Full Meter)      | [M] or [Numpad Enter]
 --------------------------------------------------------------------------------
+QUICK SHORTCUTS:
+- [F]: Toggle Fullscreen
+- [Space] or [Enter]: Quick Rematch on Victory Screen
 ================================================================================
