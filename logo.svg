@@ -1,36 +1,27 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+<svg width="128" height="128" viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg">
   <!-- Black background -->
-  <rect width="100%" height="100%" fill="#000000" />
-  <!-- Define neon glow filter -->
+  <rect width="100%" height="100%" fill="#000" />
+  <!-- Neon glow filter -->
   <defs>
-    <filter id="neon" x="-50%" y="-50%" width="200%" height="200%">
-      <feGaussianBlur stdDeviation="4" result="coloredBlur" />
+    <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="2" result="blur" />
       <feMerge>
-        <feMergeNode in="coloredBlur" />
+        <feMergeNode in="blur" />
         <feMergeNode in="SourceGraphic" />
       </feMerge>
     </filter>
   </defs>
-  <!-- Stick figure (centered) -->
-  <g transform="translate(256,150)" filter="url(#neon)" fill="none" stroke="url(#grad)" stroke-width="8" stroke-linecap="round">
-    <!-- Gradient for neon cyan/magenta -->
-    <defs>
-      <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="0%">
-        <stop offset="0%" stop-color="#00ffff" />
-        <stop offset="100%" stop-color="#ff00ff" />
-      </linearGradient>
-    </defs>
+  <!-- Simple stick figure with cyan glow -->
+  <g stroke="#00ffff" stroke-width="4" fill="none" filter="url(#glow)" stroke-linecap="round">
     <!-- Head -->
-    <circle cx="0" cy="-40" r="30" stroke="url(#grad)" />
+    <circle cx="64" cy="30" r="12" />
     <!-- Body -->
-    <line x1="0" y1="-10" x2="0" y2="80" />
+    <line x1="64" y1="42" x2="64" y2="80" />
     <!-- Arms -->
-    <line x1="-40" y1="20" x2="40" y2="20" />
+    <line x1="44" y1="55" x2="84" y2="55" />
     <!-- Legs -->
-    <line x1="0" y1="80" x2="-30" y2="130" />
-    <line x1="0" y1="80" x2="30" y2="130" />
+    <line x1="64" y1="80" x2="48" y2="110" />
+    <line x1="64" y1="80" x2="80" y2="110" />
   </g>
-  <!-- Text label -->
-  <text x="50%" y="380" text-anchor="middle" fill="#00ffff" font-family="'Plus Jakarta Sans', sans-serif" font-size="48" filter="url(#neon)" >Stickman Clash</text>
 </svg>
