@@ -1,5 +1,5 @@
 /**
- * STICKMAN CLASH - 1v1 Arena Fighter (Mobile & Responsive Pro Edition)
+
  * Features:
  * - Multi-Touch Engine with pointer tracking & haptics
  * - 2-Player Split-Screen Touch Mode for tablets/phones
@@ -146,7 +146,7 @@ const Haptics = {
   enabled: true,
   trigger(ms = 15) {
     if (this.enabled && navigator.vibrate) {
-      try { navigator.vibrate(ms); } catch (e) {}
+      try { navigator.vibrate(ms); } catch (e) { }
     }
   }
 };
