@@ -1,6 +1,6 @@
 /**
 
- * Features:
+
  * - Multi-Touch Engine with pointer tracking & haptics
  * - 2-Player Split-Screen Touch Mode for tablets/phones
  * - Responsive Canvas Auto-scaler (Retina & high-DPI crisp)
